@@ -11,12 +11,12 @@ struct DataResponse
 {
 	enum Type
 	{
-		FrameDescriptionBoard = 0,	// DescriptionBoard for Instrumental Frames
-		EventFrame = 1,							// Instrumental Data
-		SamplingFrame = 2,					// Sampling Data
-		NullFrame = 3,							// Last Fame Mark
-		ReportProgress = 4,					// Report Current Progress
-		Handshake = 5,							// Handshake Response
+		FrameDescriptionBoard = 0, // DescriptionBoard for Instrumental Frames
+		EventFrame = 1,            // Instrumental Data
+		SamplingFrame = 2,         // Sampling Data
+		NullFrame = 3,             // Last Fame Mark
+		ReportProgress = 4,        // Report Current Progress
+		Handshake = 5,             // Handshake Response
 	};
 
 	uint32 version;
@@ -41,7 +41,7 @@ public:
 	};
 
 	virtual void Apply() = 0;
-	virtual ~IMessage() {}
+	virtual ~IMessage() = default;
 
 	static IMessage* Create( InputDataStream& str );
 };
