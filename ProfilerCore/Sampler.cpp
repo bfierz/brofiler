@@ -5,7 +5,7 @@
 #include "Serialization.h"
 #include "Sampler.h"
 #include <DbgHelp.h>
-#include <hash_set>
+#include <unordered_set>
 #include "HPTimer.h"
 
 namespace Profiler
@@ -38,11 +38,13 @@ struct CallStackTreeNode
 		return children.back().Merge(callstack, index - 1); 
 	}
 
-	void CollectAddresses(std::hash_set<DWORD64>& addresses) const
+	void CollectAddresses(std::unordered_set<DWORD64>& addresses) const
 	{
 		addresses.insert(dwArddress);
-		for each (const auto& node in children)
+		for (const auto& node : children)
+		{
 			node.CollectAddresses(addresses);
+		}
 	}
 
 	OutputDataStream& Serialize(OutputDataStream& stream) const
@@ -50,8 +52,10 @@ struct CallStackTreeNode
 		stream << (uint64)dwArddress << invokeCount;
 
 		stream << (uint32)children.size();
-		for each (const CallStackTreeNode& node in children)
+		for (const CallStackTreeNode& node : children)
+		{
 			node.Serialize(stream);
+		}
 
 		return stream;
 	}
@@ -126,7 +130,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
 	openThreads.reserve(sampler.targetThreads.size());
 
-	for each (ThreadEntry* entry in sampler.targetThreads)
+	for (ThreadEntry* entry : sampler.targetThreads)
 	{
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
@@ -152,7 +156,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 		SpinSleep(sampler.intervalMicroSeconds);
 
 		// Check whether we are inside sampling scope
-		for each (const auto& entry in openThreads)
+		for (const auto& entry : openThreads)
 		{
 			HANDLE handle = entry.first;
 			const ThreadEntry* thread = entry.second;
@@ -185,8 +189,10 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 		}
 	}
 
-	for each (const auto& entry in openThreads)
+	for (const auto& entry : openThreads)
+	{
 		CloseHandle(entry.first);
+	}
 
 	return 0;
 }
@@ -207,19 +213,27 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 
 	Core::Get().DumpProgress("Merging CallStacks...");
 
-	for each (const CallStack& callstack in callstacks)
+	for (const CallStack& callstack : callstacks)
+	{
 		if (!callstack.empty())
+		{
 			tree.Merge(callstack, callstack.size() - 1);
+		}
+	}
 
-	std::hash_set<DWORD64> addresses;
+	std::unordered_set<DWORD64> addresses;
 	tree.CollectAddresses(addresses);
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
-	std::vector<const Symbol * const> symbols;
-	for each (DWORD64 address in addresses)
+	std::vector<const Symbol*> symbols;
+	for (DWORD64 address : addresses)
+	{
 		if (const Symbol * const symbol = symEngine.GetSymbol(address))
+		{
 			symbols.push_back(symbol);
+		}
+	}
 
 	stream << symbols;
 
@@ -233,10 +247,12 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsSamplingScope() const
 {
-	for each (const ThreadEntry* entry in targetThreads)
+	for (const ThreadEntry* entry : targetThreads)
+	{
 		if (const EventStorage* storage = *entry->threadTLS)
 			if (storage->isSampling)
 				return true;
+	}
 
 	return false;
 }
@@ -261,8 +277,10 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 				std::vector<ulong> threadIDs;
 
 				const auto& threads = Core::Get().GetThreads();
-				for each (const auto& thread in threads)
+				for (const auto& thread : threads)
+				{
 					threadIDs.push_back(thread->description.threadID);
+				}
 
 				return Hook::inst.Install(*symbol, threadIDs);
 			}

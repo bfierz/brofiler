@@ -31,8 +31,10 @@ namespace Profiler
 	{
 		stream << (uint32)val.size();
 
-		for each (const T& element in val)
+		for (const T& element : val)
+		{
 			stream << element;
+		}
 
 		return stream;
 	}

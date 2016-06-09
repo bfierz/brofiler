@@ -7,9 +7,4 @@
   <ItemGroup>
     <ClInclude Include="TestEngine.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Filter Include="common">
-      <UniqueIdentifier>{bf62b990-2d18-41d5-9831-b85591f970b5}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
 </Project>

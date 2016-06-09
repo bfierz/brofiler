@@ -241,7 +241,7 @@ struct FuncOverride
 
 	~FuncOverride()
 	{
-		for each (TRACED_HOOK_HANDLE handle in trackHandles)
+		for (TRACED_HOOK_HANDLE handle : trackHandles)
 		{
 			easyHook.LhUninstallHook(handle);
 			delete handle;

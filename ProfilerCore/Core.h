@@ -5,8 +5,8 @@
 #include "MemoryPool.h"
 #include "Concurrency.h"
 #include "ETW.h"
-//#include "Graphics.h"
-#include <map>
+
+#include <memory>
 
 namespace Profiler
 {

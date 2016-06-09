@@ -43,9 +43,6 @@ void Core::DumpFrames()
 
 	DumpProgress("Collecting Frame Events...");
 
-	//Graphics::Image image;
-	//graphics.GetScreenshot(image);
-
 	uint32 mainThreadIndex = 0;
 
 	for (size_t i = 0; i < threads.size(); ++i)

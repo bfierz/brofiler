@@ -1,13 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProfilerTest", "ProfilerTest\ProfilerTest.vcxproj", "{17ED90EC-1789-4CCF-903B-12E64CCF5728}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brofiler", "Brofiler\Brofiler.csproj", "{97F462A6-7E81-4AD1-AE48-602F79F70169}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProfilerCore", "ProfilerCore\ProfilerCore.vcxproj", "{A8E32855-F506-4E07-AA39-9FFF743CFFE6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4164CD29-B7C4-47BF-9F75-A8D5BF59CCA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
