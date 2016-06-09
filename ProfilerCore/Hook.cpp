@@ -218,7 +218,7 @@ struct FuncOverride
 		if (module != nullptr)
 		{
 			originalFunction = (TFunc)GetProcAddress( module, funcName );
-			description = Profiler::EventDescription::Create(funcName, dllName, 0, (uint32)Profiler::Color::White);
+			description = Profiler::EventDescription::Create(funcName, dllName, 0, Profiler::Color::White);
 		}
 	}
 
