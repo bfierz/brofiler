@@ -3,7 +3,7 @@ project (Brofiler)
 
 IF (WIN32)
 add_definitions(-DWIN32)
-ELIF(WIN64)
+ELSEIF(WIN64)
 add_definitions(-DWIN64)
 ELSE()
 add_definitions(-DLINUX64)

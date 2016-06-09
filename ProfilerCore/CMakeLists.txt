@@ -3,7 +3,7 @@ file(GLOB Platform_SRC
     "Windows/*.h"
     "Windows/*.cpp"
 )
-ELIF(WIN64)
+ELSEIF(WIN64)
 file(GLOB Platform_SRC
     "Windows/*.h"
     "Windows/*.cpp"

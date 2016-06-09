@@ -56,7 +56,7 @@ void Event::Stop(EventData& data)
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	byte flags = (ob.isSampling ? 0x1 : 0);
-	return stream << ob.name << ob.file << ob.line << (unsigned long) ob.color << flags;
+	return stream << ob.name << ob.file << ob.line << (uint32_t) ob.color << flags;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)
