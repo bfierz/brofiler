@@ -14,10 +14,8 @@ namespace Profiler
 struct ScopeHeader
 {
 	EventTime event;
-	uint32 boardNumber;
-	uint32 threadNumber;
-
-	ScopeHeader();
+	uint32 boardNumber{ 0 };
+	uint32 threadNumber{ 0 };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const ScopeHeader& ob);
@@ -120,7 +118,8 @@ class Core
 
 	uint32 mainThreadID;
 
-	std::vector<ThreadEntry*> threads;
+	/// List of all threads using the profiler
+	std::vector<std::unique_ptr<ThreadEntry>> threads;
 
 	int64 progressReportedLastTimestampMS;
 
@@ -146,14 +145,11 @@ public:
 	// Controls sampling routine
 	Sampler sampler;
 
-	// Controls GPU activity
-	// Graphics graphics;
-
 	// Event Trace for Windows interface
 	ETW etw;
 
 	// Returns thread collection
-	const std::vector<ThreadEntry*>& GetThreads() const;
+	const std::vector<std::unique_ptr<ThreadEntry>>& GetThreads() const;
 
 	// Starts sampling process
 	void StartSampling();

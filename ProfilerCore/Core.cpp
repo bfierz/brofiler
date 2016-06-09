@@ -6,8 +6,6 @@
 #include "Thread.h"
 #include "HPTimer.h"
 
-//#include "Hook.h"
-
 extern "C" Profiler::EventData* NextEvent()
 {
 	if (Profiler::EventStorage* storage = Profiler::Core::storage)
@@ -71,7 +69,7 @@ void Core::DumpFrames()
 
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
-		ThreadEntry* entry = threads[i];
+		ThreadEntry* entry = threads[i].get();
 		scope.header.threadNumber = (uint32)i;
 
 		syncronization.resize(entry->storage.synchronizationBuffer.Size());
@@ -179,8 +177,10 @@ void Core::Activate( bool active )
 	{
 		isActive = active;
 
-		for each (ThreadEntry* entry in threads)
+		for (auto& entry : threads)
+		{
 			entry->Activate(active);
+		}
 
 		if (active)
 		{
@@ -226,12 +226,14 @@ bool Core::RegisterThread(const ThreadDescription& description)
 {
 	CRITICAL_SECTION(lock);
 
-	for each (const ThreadEntry* entry in threads)
+	for (const auto& entry : threads)
+	{
 		if (entry->description.threadID == description.threadID)
+		{
 			return false;
-
-	ThreadEntry* entry = new ThreadEntry(description, &storage);
-	threads.push_back(entry);
+		}
+	}
+	threads.emplace_back(std::make_unique<ThreadEntry>(description, &storage));
 
 	InstallSynchronizationHooks(description.threadID);
 
@@ -240,11 +242,9 @@ bool Core::RegisterThread(const ThreadDescription& description)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	for each (ThreadEntry* entry in threads)
-		delete entry;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::vector<ThreadEntry*>& Core::GetThreads() const
+const std::vector<std::unique_ptr<ThreadEntry>>& Core::GetThreads() const
 {
 	return threads;
 }
@@ -254,11 +254,6 @@ EventStorage* Core::storage = nullptr;
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ScopeHeader::ScopeHeader() : threadNumber(0), boardNumber(0)
-{
-
-}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header)
 {
@@ -276,6 +271,11 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
+{
+	return stream << entry->description;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const std::unique_ptr<ThreadEntry>& entry)
 {
 	return stream << entry->description;
 }

@@ -92,12 +92,16 @@ Sampler::~Sampler()
 	StopSampling();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval)
+void Sampler::StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& threads, uint samplingInterval)
 {
 	symEngine.Init();
 
 	intervalMicroSeconds = samplingInterval;
-	targetThreads = threads;
+	targetThreads.resize(threads.size());
+	std::transform(std::begin(threads), std::end(threads), std::begin(targetThreads), [](auto& thread_ptr)
+	{
+		return thread_ptr.get();
+	});
 
 	if (IsActive())
 		StopSampling();
@@ -250,8 +254,12 @@ bool Sampler::IsSamplingScope() const
 	for (const ThreadEntry* entry : targetThreads)
 	{
 		if (const EventStorage* storage = *entry->threadTLS)
+		{
 			if (storage->isSampling)
+			{
 				return true;
+			}
+		}
 	}
 
 	return false;

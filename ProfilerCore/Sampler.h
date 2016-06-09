@@ -2,6 +2,7 @@
 #include "SymEngine.h"
 #include <windows.h>
 #include <array>
+#include <memory>
 #include <vector>
 
 namespace Profiler
@@ -31,7 +32,7 @@ public:
 
 	bool IsActive() const;
 
-	void StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval = 300);
+	void StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& threads, uint samplingInterval = 300);
 	bool StopSampling();
 
 	bool SetupHook(uint64 address, bool isHooked);

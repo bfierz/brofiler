@@ -32,16 +32,16 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 
 	CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
 
-	const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
+	const auto& threads = Core::Get().GetThreads();
 
-	for (size_t i = 0; i < threads.size(); ++i)
+	for (const auto& entry : threads)
 	{
-		ThreadEntry* entry = threads[i];
-
 		if (entry->description.threadID == pSwitchEvent->NewThreadId)
 		{
 			if (EventTime* time = entry->storage.synchronizationBuffer.Back())
+			{
 				time->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+			}
 		}
 		else if (entry->description.threadID == pSwitchEvent->OldThreadId)
 		{
