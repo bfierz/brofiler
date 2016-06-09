@@ -223,8 +223,8 @@ struct BROFILER_API EventDescription
 
 	const char* name{ "" };
 	const char* file{ "" };
-	uint32_t line{ 0 };
-	uint32_t index{ 0 };
+	uint32 line{ 0 };
+	uint32 index{ 0 };
 	Color color{ Color::Null };
 
 	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const Color eventColor = Color::Null);
