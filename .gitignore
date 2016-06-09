@@ -2,3 +2,5 @@
 /Profiler.VC.db
 /.vs
 *.user
+/Brofiler/obj
+/BrofilerLib/obj

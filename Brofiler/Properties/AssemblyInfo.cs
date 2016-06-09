@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("Brofiler")]
 [assembly: AssemblyDescription("Super Lightweight C++ Profiler for Games")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Mail.ru Games")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Brofiler")]
-[assembly: AssemblyCopyright("Copyright © Vadim Syusarev 2015")]
+[assembly: AssemblyCopyright("Copyright © Vadim Syusarev 2015, Basil Fierz 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -151,13 +151,6 @@
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
     <Compile Include="CloseableTabItem.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
-    <Compile Include="Data\Durationable.cs" />
-    <Compile Include="Data\EventBoard.cs" />
-    <Compile Include="Data\EventData.cs" />
-    <Compile Include="Data\EventFrame.cs" />
-    <Compile Include="Data\Frame.cs" />
-    <Compile Include="Data\SamplingFrame.cs" />
-    <Compile Include="Data\SourceView.cs" />
     <Compile Include="Frames\FrameDataTable.xaml.cs">
       <DependentUpon>FrameDataTable.xaml</DependentUpon>
     </Compile>
@@ -165,10 +158,6 @@
       <DependentUpon>SourceViewControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="GlobalSettings.cs" />
-    <Compile Include="ProfilerClient.cs" />
-    <Compile Include="Data\EventTree.cs" />
-    <Compile Include="Data\FrameCollection.cs" />
-    <Compile Include="Message\Message.cs" />
     <Compile Include="Frames\FrameInfo.xaml.cs">
       <DependentUpon>FrameInfo.xaml</DependentUpon>
     </Compile>
@@ -207,7 +196,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\EventDescription.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -330,5 +318,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TimeLine\Icons\Clear-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BrofilerLib\BrofilerLib.csproj">
+      <Project>{5bdcd75c-eeab-4343-be17-74da81c3e093}</Project>
+      <Name>BrofilerLib</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
