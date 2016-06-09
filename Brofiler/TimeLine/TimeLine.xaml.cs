@@ -64,36 +64,7 @@ namespace Profiler
 			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
 			return nics.Length > 0 ? nics[0].GetPhysicalAddress().ToString() : new Random().Next().ToString();
 		}
-
-		void SendReportToGoogleAnalytics()
-		{
-			var postData = new Dictionary<string, string> 
-			{
-        { "v", "1" },
-        { "tid", "UA-58006599-1" },
-        { "cid", GetUniqueID() },
-        { "t", "pageview" },
-				{ "dh", "brofiler.com" },
-				{ "dp", "/app.html" },
-				{ "dt", CurrentVersion.ToString() }
-			};
-
-			StringBuilder text = new StringBuilder();
-
-			foreach (var pair in postData)
-			{
-				if (text.Length != 0)
-					text.Append("&");
-
-				text.Append(String.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)));
-			}
-
-			using (WebClient client = new WebClient())
-			{
-				client.UploadStringAsync(new Uri("http://www.google-analytics.com/collect"), "POST", text.ToString());
-			}
-		}
-
+        
 		void TimeLine_Loaded(object sender, RoutedEventArgs e)
 		{
 			checkVersion = new WebClient();
@@ -119,8 +90,6 @@ namespace Profiler
 
 			try
 			{
-				SendReportToGoogleAnalytics();
-
 				XmlDocument doc = new XmlDocument();
 				doc.LoadXml(e.Result);
 
