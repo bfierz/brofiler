@@ -1,6 +1,6 @@
 #pragma once
 #include "SymEngine.h"
-#include <windows.h>
+#include "Thread.h"
 #include <array>
 #include <memory>
 #include <vector>
@@ -8,6 +8,7 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class OutputDataStream;
 struct ThreadEntry;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Sampler
@@ -17,8 +18,8 @@ class Sampler
 	std::list<CallStack> callstacks;
 	std::vector<ThreadEntry*> targetThreads;
 
-	HANDLE workerThread;
-	HANDLE finishEvent;
+	SystemThread workerThread;
+	SystemSyncEvent finishEvent;
 
 	uint intervalMicroSeconds;
 

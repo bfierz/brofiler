@@ -1,9 +1,9 @@
 #pragma once
 #include "Common.h"
 #include <string>
-#include <windows.h>
 #include <unordered_map>
 #include <array>
+#include <vector>
 
 namespace Profiler
 {
