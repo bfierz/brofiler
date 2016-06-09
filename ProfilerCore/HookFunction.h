@@ -12,8 +12,9 @@ namespace Profiler
 	}
 }
 
-#define DECLARE_HOOK_FUNCTION(index) extern "C" void HookFunctionASM##index(); \
-																		 static bool autoRegisterFunction##index = Profiler::RegisterFunction(index, HookFunctionASM##index);
+#define DECLARE_HOOK_FUNCTION(index) \
+	extern "C" void HookFunctionASM##index(); \
+	static bool autoRegisterFunction##index = Profiler::RegisterFunction(index, HookFunctionASM##index);
 
 DECLARE_HOOK_FUNCTION(0)
 DECLARE_HOOK_FUNCTION(1)

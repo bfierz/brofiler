@@ -74,9 +74,7 @@ struct EventStorage
 	CategoryBuffer categoryBuffer; 
 	SynchronizationBuffer synchronizationBuffer;
 
-	volatile uint isSampling;
-
-	EventStorage();
+	volatile uint isSampling{ 0 };
 
 	BRO_INLINE EventData& NextEvent() 
 	{
@@ -129,7 +127,6 @@ class Core
 	void Update();
 
 	Core();
-	~Core();
 
 	static Core notThreadSafeInstance;
 
