@@ -347,43 +347,7 @@ namespace Profiler
                 lock (frames)
                 {
                     FileStream stream = new FileStream(dlg.FileName, FileMode.Create);
-
-                    HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
-                    HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
-
-                    foreach (Frame frame in frames)
-                    {
-                        if (frame is EventFrame)
-                        {
-                            EventFrame eventFrame = frame as EventFrame;
-                            boards.Add(eventFrame.DescriptionBoard);
-                            groups.Add(eventFrame.Group);
-                        }
-                    }
-
-                    foreach (EventDescriptionBoard board in boards)
-                    {
-                        DataResponse.Serialize(DataResponse.Type.FrameDescriptionBoard, board.BaseStream, stream);
-                    }
-
-                    foreach (Frame frame in frames)
-                    {
-                        DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
-                    }
-
-                    foreach (FrameGroup group in groups)
-                    {
-                        for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
-                        {
-                            if (threadIndex != group.Board.MainThreadIndex)
-                            {
-                                foreach (Frame frame in group.Threads[threadIndex].Events)
-                                {
-                                    DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
-                                }
-                            }
-                        }
-                    }
+                    frames.Serialize(stream);
 
                     stream.Close();
                 }
