@@ -9,6 +9,9 @@ namespace Profiler
 {
     class Program
     {
+        // Collected frames
+        static FrameCollection frames = new FrameCollection();
+
         static void Main(string[] args)
         {
             IPAddress ip = null;
@@ -17,8 +20,9 @@ namespace Profiler
             ProfilerClient.Get().IpAddress = ip;
             ProfilerClient.Get().Port = 31313;
 
-            // Collected frames
-            FrameCollection frames = new FrameCollection();
+            // Receive thread
+            Thread socketThread = new Thread(RecieveMessage);
+            socketThread.Start();
 
             var connectionEstablished = false;
             do
@@ -42,54 +46,23 @@ namespace Profiler
             if (ProfilerClient.Get().SendMessage(new StartMessage()))
             {
                 System.Console.WriteLine("Begin capturing...");
-
-                /// TODO: Periodically send a stop message in order to dump the frames
                 while (true)
                 {
-                    DataResponse response = ProfilerClient.Get().RecieveMessage();
-                    if (response != null)
-                    {
-                        // Handle the response
-                        if (response.Version == NetworkProtocol.NETWORK_PROTOCOL_VERSION)
-                        {
-                            switch (response.ResponseType)
-                            {
-                                case DataResponse.Type.ReportProgress:
-                                    Int32 length = response.Reader.ReadInt32();
-                                    System.Console.WriteLine("Progress: " + new String(response.Reader.ReadChars(length)));
-                                    break;
+                    // Wait until a packet was done
+                    Thread.Sleep(1000);
 
-                                case DataResponse.Type.NullFrame:
-                                    lock (frames)
-                                    {
-                                        frames.Flush();
-                                    }
-                                    break;
+                    // Lost connection -> exit
+                    if (!ProfilerClient.Get().IsConnected)
+                        break;
 
-                                case DataResponse.Type.Handshake:
-                                    break;
-
-                                default:
-                                    lock (frames)
-                                    {
-                                        frames.Add(response.ResponseType, response.Reader);
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Lost connection -> exit
-                        if (!ProfilerClient.Get().IsConnected)
-                            break;
-
-                        // Wait until a packet was done
-                        Thread.Sleep(1000);
-                    }                    
+                    ProfilerClient.Get().SendMessage(new StopMessage());
+                    ProfilerClient.Get().SendMessage(new StartMessage());
                 }
 
                 System.Console.WriteLine("Done capturing.");
+
+                socketThread.Abort();
+                socketThread = null;
 
                 // Connection was closed, save the data
                 FileStream stream = new FileStream("Test.prof", FileMode.Create);
@@ -98,6 +71,50 @@ namespace Profiler
 
             // Close the connection
             ProfilerClient.Get().Close();
+        }
+
+        public static void RecieveMessage()
+        {
+            while (true)
+            {
+                DataResponse response = ProfilerClient.Get().RecieveMessage();
+
+                if (response != null)
+                {
+                    // Handle the response
+                    if (response.Version == NetworkProtocol.NETWORK_PROTOCOL_VERSION)
+                    {
+                        switch (response.ResponseType)
+                        {
+                            case DataResponse.Type.ReportProgress:
+                                Int32 length = response.Reader.ReadInt32();
+                                System.Console.WriteLine("Progress: " + new String(response.Reader.ReadChars(length)));
+                                break;
+
+                            case DataResponse.Type.NullFrame:
+                                lock (frames)
+                                {
+                                    frames.Flush();
+                                }
+                                break;
+
+                            case DataResponse.Type.Handshake:
+                                break;
+
+                            default:
+                                lock (frames)
+                                {
+                                    frames.Add(response.ResponseType, response.Reader);
+                                }
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(1000);
+                }
+            }
         }
     }
 }
