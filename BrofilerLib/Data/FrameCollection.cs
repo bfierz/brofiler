@@ -79,6 +79,46 @@ namespace Profiler.Data
                     }
             }
         }
+
+        public void Serialize(System.IO.Stream stream)
+        {
+            HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
+            HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
+
+            foreach (Frame frame in this)
+            {
+                if (frame is EventFrame)
+                {
+                    EventFrame eventFrame = frame as EventFrame;
+                    boards.Add(eventFrame.DescriptionBoard);
+                    groups.Add(eventFrame.Group);
+                }
+            }
+
+            foreach (EventDescriptionBoard board in boards)
+            {
+                DataResponse.Serialize(DataResponse.Type.FrameDescriptionBoard, board.BaseStream, stream);
+            }
+
+            foreach (Frame frame in this)
+            {
+                DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
+            }
+
+            foreach (FrameGroup group in groups)
+            {
+                for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
+                {
+                    if (threadIndex != group.Board.MainThreadIndex)
+                    {
+                        foreach (Frame frame in group.Threads[threadIndex].Events)
+                        {
+                            DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public class TestFrameCollection : FrameCollection
