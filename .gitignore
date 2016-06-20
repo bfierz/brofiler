@@ -3,4 +3,5 @@
 /.vs
 *.user
 /Brofiler/obj
+/BrofilerCmd/obj
 /BrofilerLib/obj
