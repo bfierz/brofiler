@@ -22,7 +22,7 @@ public:
 
 	operator bool() const { return threadId != 0; }
 private:
-	uint64 threadId;
+	uint64_t threadId;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +34,8 @@ void AtomicDecrement(volatile uint* value);
 class SystemSyncEvent
 {
 private:
-	uint64 eventHandlerMutex[4];
-	uint64 eventHandler[4];
+	uint64_t eventHandlerMutex[4];
+	uint64_t eventHandler[4];
 public:
 	SystemSyncEvent();
 	~SystemSyncEvent();

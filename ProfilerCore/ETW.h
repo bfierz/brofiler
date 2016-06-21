@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Types.h"
 #include "MemoryPool.h"
 #ifdef WINDOWS
 #define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.

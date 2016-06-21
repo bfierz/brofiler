@@ -10,22 +10,22 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const byte SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
+const uint8_t SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CSwitch 
 {
-	uint32 NewThreadId;
-	uint32 OldThreadId;
-	int8  NewThreadPriority;
-	int8  OldThreadPriority;
-	uint8  PreviousCState;
-	int8  SpareByte;
-	int8  OldThreadWaitReason;
-	int8  OldThreadWaitMode;
-	int8  OldThreadState;
-	int8  OldThreadWaitIdealProcessor;
-	uint32 NewThreadWaitTime;
-	uint32 Reserved;
+	uint32_t NewThreadId;
+	uint32_t OldThreadId;
+	int8_t  NewThreadPriority;
+	int8_t  OldThreadPriority;
+	uint8_t  PreviousCState;
+	int8_t  SpareByte;
+	int8_t  OldThreadWaitReason;
+	int8_t  OldThreadWaitMode;
+	int8_t  OldThreadState;
+	int8_t  OldThreadWaitIdealProcessor;
+	uint32_t NewThreadWaitTime;
+	uint32_t Reserved;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)

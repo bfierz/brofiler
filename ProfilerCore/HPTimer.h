@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Profiler
 {
-	extern "C" int64 GetTime();
+	extern "C" int64_t GetTime();
 
-	int64 GetFrequency();
-	int64 GetTimeMilliSeconds();
-	int64 GetTimeMicroSeconds();
+	int64_t GetFrequency();
+	int64_t GetTimeMilliSeconds();
+	int64_t GetTimeMicroSeconds();
 
 	void SpinSleep(uint32 microSeconds);
 }

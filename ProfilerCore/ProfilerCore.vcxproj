@@ -341,10 +341,8 @@
     <ClInclude Include="SymEngine.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="Types.h" />
     <ClInclude Include="Windows\CommonWindows.h" />
     <ClInclude Include="Windows\ConcurrencyWindows.h" />
-    <ClInclude Include="Windows\PublicCommonWindows.h" />
     <ClInclude Include="Windows\SocketWindows.h" />
   </ItemGroup>
   <ItemGroup>

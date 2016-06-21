@@ -5,7 +5,7 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 NETWORK_PROTOCOL_VERSION = 5;
+static const uint32_t NETWORK_PROTOCOL_VERSION = 5;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct DataResponse
 {
@@ -19,8 +19,8 @@ struct DataResponse
 		Handshake = 5,             // Handshake Response
 	};
 
-	uint32 version;
-	uint32 size;
+	uint32_t version;
+	uint32_t size;
 	Type type;
 
 	DataResponse(Type t, uint32 s) : type(t), size(s), version(NETWORK_PROTOCOL_VERSION) {}
@@ -51,7 +51,7 @@ class Message : public IMessage
 {
 	enum { id = MESSAGE_TYPE };
 public:
-	static uint32 GetMessageType() { return id; }
+	static uint32_t GetMessageType() { return id; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct StartMessage : public Message<IMessage::Start>
@@ -68,8 +68,8 @@ struct StopMessage : public Message<IMessage::Stop>
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct TurnSamplingMessage : public Message<IMessage::TurnSampling>
 {
-	int32 index;
-	byte isSampling;
+	int32_t index;
+	uint8_t isSampling;
 
 	static IMessage* Create(InputDataStream& stream);
 	virtual void Apply() override;
@@ -77,8 +77,8 @@ struct TurnSamplingMessage : public Message<IMessage::TurnSampling>
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SetupHookMessage : public Message<IMessage::SetupHook>
 {
-	uint64 address;
-	byte isHooked;
+	uint64_t address;
+	uint8_t  isHooked;
 
 	static IMessage* Create(InputDataStream& stream);
 	virtual void Apply() override;

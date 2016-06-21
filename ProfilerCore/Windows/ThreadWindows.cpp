@@ -56,8 +56,8 @@ void AtomicDecrement(volatile uint* value)
 
 bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam )
 {
-    static_assert(sizeof(uint64) >= sizeof(HANDLE), "Handler is too long to be stored in uint64");
-	threadId = (uint64)CreateThread(NULL, 0, Action, lpParam, 0, NULL);
+    static_assert(sizeof(uint64_t) >= sizeof(HANDLE), "Handler is too long to be stored in uint64_t");
+	threadId = (uint64_t)CreateThread(NULL, 0, Action, lpParam, 0, NULL);
 	return threadId != 0;
 }
 
@@ -86,7 +86,7 @@ bool SystemThread::Terminate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SystemSyncEvent::SystemSyncEvent()
 {
-	eventHandler[0] = (uint64)CreateEvent(NULL, false, false, 0);
+	eventHandler[0] = (uint64_t)CreateEvent(NULL, false, false, 0);
 }
 
 SystemSyncEvent::~SystemSyncEvent()

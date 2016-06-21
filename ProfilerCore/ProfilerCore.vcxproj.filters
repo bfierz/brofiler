@@ -40,9 +40,6 @@
     <ClInclude Include="Socket.h">
       <Filter>Communication</Filter>
     </ClInclude>
-    <ClInclude Include="Types.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="HookFunction.h">
       <Filter>Tools\EasyHook</Filter>
     </ClInclude>
@@ -57,9 +54,6 @@
       <Filter>Windows</Filter>
     </ClInclude>
     <ClInclude Include="Windows\ConcurrencyWindows.h">
-      <Filter>Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Windows\PublicCommonWindows.h">
       <Filter>Windows</Filter>
     </ClInclude>
     <ClInclude Include="Windows\SocketWindows.h">

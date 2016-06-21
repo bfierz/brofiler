@@ -36,7 +36,7 @@ public:
 	void StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& threads, uint samplingInterval = 300);
 	bool StopSampling();
 
-	bool SetupHook(uint64 address, bool isHooked);
+	bool SetupHook(uint64_t address, bool isHooked);
 
 	size_t GetCollectedCount() const;
 	OutputDataStream& Serialize(OutputDataStream& stream);

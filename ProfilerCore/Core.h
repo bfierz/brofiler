@@ -119,7 +119,7 @@ class Core
 	/// List of all threads using the profiler
 	std::vector<std::unique_ptr<ThreadEntry>> threads;
 
-	int64 progressReportedLastTimestampMS;
+	int64_t progressReportedLastTimestampMS;
 
 	std::vector<EventTime> frames;
 

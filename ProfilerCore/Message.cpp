@@ -60,7 +60,7 @@ public:
 
 		size_t length = str.Length();
 
-		int32 messageType = IMessage::COUNT;
+		int32_t messageType = IMessage::COUNT;
 		str >> messageType;
 
 		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
@@ -79,7 +79,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val)
 {
-	return os << val.version << (uint32)val.type;
+	return os << val.version << (uint32_t)val.type;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

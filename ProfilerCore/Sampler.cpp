@@ -49,7 +49,7 @@ struct CallStackTreeNode
 
 	OutputDataStream& Serialize(OutputDataStream& stream) const
 	{
-		stream << (uint64)dwArddress << invokeCount;
+		stream << (uint64_t)dwArddress << invokeCount;
 
 		stream << (uint32)children.size();
 		for (const CallStackTreeNode& node : children)
@@ -181,7 +181,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
 	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
-	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
+	return os << (uint64_t)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
@@ -247,7 +247,7 @@ size_t Sampler::GetCollectedCount() const
 	return callstacks.size();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Sampler::SetupHook(uint64 address, bool isHooked)
+bool Sampler::SetupHook(uint64_t address, bool isHooked)
 {
 	if (!isHooked && address == 0)
 	{
