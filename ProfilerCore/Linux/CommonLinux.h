@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <list>
-#include "PublicCommonLinux.h"
 
 // MEMORY //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define MALLOC_ALIGN(SIZE, ALIGNMENT) aligned_alloc(ALIGNMENT, SIZE)
