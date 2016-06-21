@@ -101,7 +101,7 @@ EasyHook easyHook;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Profiler::Hook Profiler::Hook::inst;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Hook::Install(const Symbol& symbol, const std::vector<ulong>& threadIDs)
+bool Hook::Install(const Symbol& symbol, const std::vector<uint32_t>& threadIDs)
 {
 	auto thread = threadIDs.begin();
 	for (auto it = slots.begin(); it != slots.end() && thread != threadIDs.end(); ++it)
@@ -173,13 +173,13 @@ bool HookSlotWrapper::Clear()
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool HookSlotWrapper::Install(const Symbol& symbol, ulong threadID)
+bool HookSlotWrapper::Install(const Symbol& symbol, uint32_t threadID)
 {
 	BRO_VERIFY(IsEmpty(), "Can't install hook twice in the same slot", return false);
 
 	void* address = (void*)(symbol.address - symbol.offset);
 
-	NTSTATUS status = easyHook.LhInstallHook( address, hookFunction, nullptr, &traceInfo);
+	NTSTATUS status = easyHook.LhInstallHook( address, (void*) hookFunction, nullptr, &traceInfo);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -230,7 +230,7 @@ struct FuncOverride
 
 		trackHandle->Link = 0;
 		
-		NTSTATUS status = easyHook.LhInstallHook( originalFunction, overrideFunction, nullptr, trackHandle );
+		NTSTATUS status = easyHook.LhInstallHook( (void*) originalFunction, (void*) overrideFunction, nullptr, trackHandle );
 		if (status != 0)
 			return false;
 		

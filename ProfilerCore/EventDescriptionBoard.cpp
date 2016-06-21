@@ -69,7 +69,7 @@ OutputDataStream& operator << ( OutputDataStream& stream, const EventDescription
 	CRITICAL_SECTION(lock)
 	const std::vector<EventDescription*>& events = ob.GetEvents();
 
-	stream << (uint32)events.size();
+	stream << (uint32_t)events.size();
 
 	for ( const EventDescription *desc : events )
 	{

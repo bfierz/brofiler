@@ -4,21 +4,18 @@
 #include "Message.h"
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
-#include <cstring>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct MessageHeader
 {
-	uint32 mark;
-	uint32 length;
+	uint32_t mark{ 0 };
+	uint32_t length{ 0 };
 
-	static const uint32 MESSAGE_MARK = 0xB50FB50F;
+	static const uint32_t MESSAGE_MARK = 0xB50FB50F;
 
 	bool IsValid() const { return mark == MESSAGE_MARK; }
-
-	MessageHeader() : mark(0), length(0) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MessageFactory

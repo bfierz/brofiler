@@ -1,11 +1,7 @@
 #pragma once
-#include "Common.h"
 #include <string>
 #include <windows.h>
 #include <winsock.h>
-//#ifndef __WINSOCK2_H
-//#include <winsock2.h>
-//#endif
 
 namespace Profiler
 {

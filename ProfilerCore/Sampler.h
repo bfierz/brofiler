@@ -1,7 +1,10 @@
 #pragma once
 #include "SymEngine.h"
 #include "Thread.h"
+
+// C++ standard library
 #include <array>
+#include <list>
 #include <memory>
 #include <vector>
 

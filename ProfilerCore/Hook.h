@@ -1,15 +1,16 @@
 #pragma once
+
+#ifndef WINDOWS
+typedef uint64_t HOOK_TRACE_INFO;
+#else
+#	include "easyhook.h"
+#endif
+
 #include "Common.h"
 #include "MemoryPool.h"
 #include "SymEngine.h"
 #include "Event.h"
 #include <vector>
-
-#ifndef WINDOWS
-typedef uint64_t HOOK_TRACE_INFO;
-#else
-#include "easyhook.h"
-#endif
 
 namespace Profiler
 {
@@ -56,7 +57,7 @@ struct HookSlotWrapper
 	bool IsEmpty() const { return functionAddress == nullptr; }
 
 	bool Clear();
-	bool Install(const Symbol& symbol, unsigned long threadID);
+	bool Install(const Symbol& symbol, uint32_t threadID);
 
 	HookSlotWrapper();
 };
@@ -72,7 +73,7 @@ public:
 	std::vector<HookSlotWrapper*> availableSlots;
 	MemoryPool<HookDescription> descriptions;
 		
-	bool Install(const Symbol& symbol, const std::vector<ulong>& threadIDs);
+	bool Install(const Symbol& symbol, const std::vector<uint32_t>& threadIDs);
 	bool Clear(const Symbol& symbol);
 	bool ClearAll();
 };

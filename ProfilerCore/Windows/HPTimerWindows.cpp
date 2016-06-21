@@ -40,7 +40,7 @@ int64_t GetTimeMicroSeconds()
 	return ( largeInteger.QuadPart * int64_t(1000000) ) / GetFrequency();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SpinSleep(uint32 microSeconds)
+void SpinSleep(uint32_t microSeconds)
 {
 	int64_t time = GetTimeMicroSeconds() + microSeconds;
 	while(GetTimeMicroSeconds() < time)

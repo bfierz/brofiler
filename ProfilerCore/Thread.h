@@ -4,7 +4,7 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 CalculateCurrentThreadID();
+uint32_t CalculateCurrentThreadID();
 HANDLE GetThreadHandleByThreadID(DWORD threadId);
 void ReleaseThreadHandle(HANDLE threadId);
 bool PauseThread(HANDLE threadId);

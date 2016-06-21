@@ -23,7 +23,7 @@ struct DataResponse
 	uint32_t size;
 	Type type;
 
-	DataResponse(Type t, uint32 s) : type(t), size(s), version(NETWORK_PROTOCOL_VERSION) {}
+	DataResponse(Type t, uint32_t s) : version(NETWORK_PROTOCOL_VERSION), size(s), type(t) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << (OutputDataStream& os, const DataResponse& val);

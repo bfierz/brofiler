@@ -14,8 +14,8 @@ namespace Profiler
 struct ScopeHeader
 {
 	EventTime event;
-	uint32 boardNumber{ 0 };
-	uint32 threadNumber{ 0 };
+	uint32_t boardNumber{ 0 };
+	uint32_t threadNumber{ 0 };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const ScopeHeader& ob);
@@ -114,7 +114,7 @@ class Core
 {
 	CriticalSection lock;
 
-	uint32 mainThreadID;
+	uint32_t mainThreadID;
 
 	/// List of all threads using the profiler
 	std::vector<std::unique_ptr<ThreadEntry>> threads;
@@ -137,7 +137,7 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static THREAD_LOCAL_VARIABLE EventStorage* storage;
+	static BRO_THREAD_LOCAL EventStorage* storage;
 
 	// Controls sampling routine
 	Sampler sampler;
@@ -173,7 +173,7 @@ public:
 	static void NextFrame() { Get().Update(); }
 
 	// Get Active ThreadID
-	static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }
+	static BRO_INLINE uint32_t GetThreadID() { return Get().mainThreadID; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

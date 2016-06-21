@@ -42,7 +42,7 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 
 	std::string data = stream.GetData();
 
-	DataResponse response(type, (uint32)data.size());
+	DataResponse response(type, (uint32_t)data.size());
 	socket->Send((char*)&response, sizeof(response));
 	socket->Send(data.c_str(), data.size());
 }

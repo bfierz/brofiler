@@ -13,8 +13,7 @@ namespace Profiler
 class CriticalSectionScope
 {
 	CriticalSection &section;
-private:
-	CriticalSectionScope &operator=( CriticalSectionScope& ) {}
+
 public:
 	CriticalSectionScope( CriticalSection& _lock ) : section(_lock) 
 	{
@@ -25,6 +24,9 @@ public:
 	{ 
 		section.Leave(); 
 	}
+
+	CriticalSectionScope(const CriticalSectionScope&) = delete;
+	CriticalSectionScope& operator=(const CriticalSectionScope&) = delete;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define CRITICAL_SECTION(criticalSection) CriticalSectionScope generatedCriticalSectionScope##__LINE__(criticalSection); 
