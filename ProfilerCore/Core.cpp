@@ -158,7 +158,7 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	DWORD currentThreadID = GetCurrentThreadId();
+	DWORD currentThreadID = CalculateCurrentThreadID();
 
 	if (mainThreadID == INVALID_THREAD_ID)
 		mainThreadID = currentThreadID;
@@ -245,7 +245,7 @@ const std::vector<std::unique_ptr<ThreadEntry>>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage* Core::storage = nullptr;
+THREAD_LOCAL_VARIABLE EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ BROFILER_API bool IsActive()
 	return Core::Get().isActive;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(GetCurrentThreadId())
+ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(CalculateCurrentThreadID())
 {
 	Core::Get().RegisterThread(*this);
 }
@@ -294,7 +294,9 @@ ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) 
 void ThreadEntry::Activate(bool isActive)
 {
 	if (isActive)
+	{
 		storage.Clear(true);
+	}
 
 	*threadTLS = isActive ? &storage : nullptr;
 }
@@ -302,11 +304,17 @@ void ThreadEntry::Activate(bool isActive)
 bool IsSleepOnlyScope(const ScopeData& scope)
 {
 	if (!scope.categories.empty() || scope.synchronization.empty())
+	{
 		return false;
+	}
 
-	for each (const EventData& data in scope.events)
+	for (const EventData& data : scope.events)
+	{
 		if (data.description->color != Color::White)
+		{
 			return false;
+		}
+	}
 
 	return true;
 }

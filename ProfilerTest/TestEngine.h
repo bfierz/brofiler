@@ -1,13 +1,23 @@
 #pragma once
-#include <windows.h>
+#include "../ProfilerCore/Types.h"
+#include "../ProfilerCore/Thread.h"
 #include <vector>
+#include <cstdint>
+
+#if defined(WINDOWS)
+	typedef HANDLE ThreadID;
+#elif defined(LINUX64)
+	typedef Profiler::SystemThread ThreadID;
+#else
+#error "Wrong OS type"
+#endif
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-		std::vector<HANDLE> workers;
+		std::vector<ThreadID> workers;
 		bool isAlive;
 
 		void UpdateInput();

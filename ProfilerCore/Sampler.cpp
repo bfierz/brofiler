@@ -1,12 +1,12 @@
 #include "Common.h"
-#include "Hook.h"
 #include "Event.h"
 #include "Core.h"
 #include "Serialization.h"
 #include "Sampler.h"
-#include <DbgHelp.h>
+#include "SymEngine.h"
 #include <unordered_set>
 #include "HPTimer.h"
+#include "Hook.h"
 
 namespace Profiler
 {
@@ -66,24 +66,22 @@ bool Sampler::StopSampling()
 	if (!IsActive())
 		return false;
 
-	SetEvent(finishEvent);
-
-	DWORD result = WaitForSingleObject(workerThread, INFINITE);
+	finishEvent.Notify();
+	
+	bool result = workerThread.Join();
 	BRO_UNUSED(result);
-	BRO_ASSERT(result == WAIT_OBJECT_0, "Can't stop sampling thread!");
-
-	CloseHandle(workerThread);
-	workerThread = nullptr;
-
-	CloseHandle(finishEvent);
-	finishEvent = nullptr;
+	BRO_ASSERT(result, "Can't stop sampling thread!");
+	
+	result = workerThread.Terminate();
+	BRO_UNUSED(result);
+	BRO_ASSERT(result, "Can't stop sampling thread!");
 
 	targetThreads.clear();
 
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Sampler::Sampler() : workerThread(nullptr), finishEvent(nullptr), intervalMicroSeconds(300)
+Sampler::Sampler() : intervalMicroSeconds(300)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,23 +106,12 @@ void Sampler::StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& thr
 
 	callstacks.clear();
 
-	BRO_VERIFY(finishEvent == nullptr && workerThread == nullptr, "Can't start sampling!", return);
-
-	finishEvent = CreateEvent(NULL, false, false, 0);
-	workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
-
-	BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
+	workerThread.Create( &Sampler::AsyncUpdate, this );
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
 {
-	return workerThread != nullptr || finishEvent != nullptr;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ClearStackContext(CONTEXT& context)
-{
-	memset(&context, 0, sizeof(context));
-	context.ContextFlags = CONTEXT_FULL;
+	return (bool)workerThread;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
@@ -139,8 +126,8 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
-		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadID);
-		if (hThread == NULL)
+		HANDLE hThread = GetThreadHandleByThreadID(threadID);
+		if (hThread == 0)
 			continue;
 
 		openThreads.push_back(std::make_pair(hThread, entry));
@@ -153,12 +140,8 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	CONTEXT context;
 
-	ClearStackContext(context);
-
-	while (WaitForSingleObject(sampler.finishEvent, 0) == WAIT_TIMEOUT)
+	while ( sampler.finishEvent.WaitForEvent(sampler.intervalMicroSeconds) )
 	{
-		SpinSleep(sampler.intervalMicroSeconds);
-
 		// Check whether we are inside sampling scope
 		for (const auto& entry : openThreads)
 		{
@@ -170,32 +153,26 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 			uint count = 0;
 
-			DWORD suspendedStatus = SuspendThread(handle);
-
-			if (suspendedStatus != (DWORD)-1)
+			if (PauseThread(handle))
 			{
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
+				if (thread->storage.isSampling && RetrieveThreadContext(handle, context))
 				{
 					count = sampler.symEngine.GetCallstack(handle, context, buffer);
 				}
-
-				ClearStackContext(context);
-				ResumeThread(handle);
+				ContinueThread(handle);
 			}
 
 			if (count > 0)
 			{
 				sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
 			}
-
-			ClearStackContext(context);
 		}
 	}
 
 	for (const auto& entry : openThreads)
 	{
-		CloseHandle(entry.first);
+		ReleaseThreadHandle(entry.first);
 	}
 
 	return 0;

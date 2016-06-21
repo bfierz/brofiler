@@ -1,10 +1,15 @@
 #pragma once
 #include "Common.h"
 #include "MemoryPool.h"
-#include "easyhook.h"
 #include "SymEngine.h"
 #include "Event.h"
 #include <vector>
+
+#ifndef WINDOWS
+typedef uint64 HOOK_TRACE_INFO;
+#else
+#include "easyhook.h"
+#endif
 
 namespace Profiler
 {

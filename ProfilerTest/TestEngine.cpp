@@ -1,13 +1,47 @@
 #include "TestEngine.h"
-#include "..\ProfilerCore\Types.h"
-#include "..\ProfilerCore\Brofiler.h"
+#include "../ProfilerCore/Brofiler.h"
 #include <math.h>
 #include <vector>
+
+#if defined(WINDOWS)
+#include <windows.h>
+#elif !defined(LINUX64)
+#error "Wrong OS type"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Test
 {
+
+namespace
+{
+void ThreadSleep(int milliseconds)
+{
+#if defined(WINDOWS)
+	Sleep(milliseconds);
+#elif defined(LINUX64)
+	Profiler::ThreadSleep(5);
+#else
+#error "Wrong OS type"
+#endif
+}
+
+
+void ThreadTerminate( ThreadID& threadId )
+{
+#if defined(WINDOWS)
+	::TerminateThread(threadId, 0);
+	DWORD resultCode = WaitForSingleObject((HANDLE)threadId, INFINITE);
+	CloseHandle((HANDLE)threadId);
+#elif defined(LINUX64)
+	threadId.Terminate();
+#else
+#error "Wrong OS type"
+#endif
+}
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI WorkerThread(PVOID params)
 {
@@ -17,7 +51,7 @@ DWORD WINAPI WorkerThread(PVOID params)
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		Sleep(5); 
+		ThreadSleep(5); 
 		engine->UpdatePhysics();
 	}
 
@@ -104,7 +138,17 @@ const size_t WORKER_THREAD_COUNT = 2;
 Engine::Engine() : isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
-		workers.push_back(CreateThread(0, 0, WorkerThread, this, 0, 0));
+	{
+#if defined(WINDOWS)
+		workers.push_back( CreateThread(NULL, 0, WorkerThread, this, 0, NULL) );
+#elif defined(LINUX64)
+		workers.push_back(Profiler::SystemThread());
+		workers.back().Create( WorkerThread, this );
+#else
+#error "Wrong OS type"
+#endif
+		
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
@@ -112,7 +156,9 @@ Engine::~Engine()
 	isAlive = false;
 
 	for (size_t i = 0; i < workers.size(); ++i)
-		TerminateThread(workers[i], 1);
+	{
+		ThreadTerminate( workers[i] );
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
