@@ -3,10 +3,39 @@ using System.IO;
 using System.Net;
 using System.Threading;
 
+using CommandLine;
+using CommandLine.Text;
+
 using Profiler.Data;
 
 namespace Profiler
 {
+    // Define a class to receive parsed values
+    class Options
+    {
+        [Option('i', "address", DefaultValue = "127.0.0.1",
+          HelpText = "IP address to connect to.")]
+        public string IpAddress { get; set; }
+
+        [Option('p', "port", DefaultValue = 31313,
+          HelpText = "Port to connect to.")]
+        public int Port { get; set; }
+
+        [Option('o', "out", Required = true,
+          HelpText = "Output file.")]
+        public string Output { get; set; }
+
+        [ParserState]
+        public IParserState LastParserState { get; set; }
+
+        [HelpOption]
+        public string GetUsage()
+        {
+            return HelpText.AutoBuild(this,
+              (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
+        }
+    }
+
     class Program
     {
         // Collected frames
@@ -14,11 +43,17 @@ namespace Profiler
 
         static void Main(string[] args)
         {
+            var options = new Options();
+            if (!CommandLine.Parser.Default.ParseArguments(args, options))
+            {
+                return;
+            }
+            
             IPAddress ip = null;
-            IPAddress.TryParse("127.0.0.1", out ip);
+            IPAddress.TryParse(options.IpAddress, out ip);
 
             ProfilerClient.Get().IpAddress = ip;
-            ProfilerClient.Get().Port = 31313;
+            ProfilerClient.Get().Port = options.Port;
 
             // Receive thread
             Thread socketThread = new Thread(RecieveMessage);
@@ -55,6 +90,7 @@ namespace Profiler
                     if (!ProfilerClient.Get().IsConnected)
                         break;
 
+                    // Emulate a message dump
                     ProfilerClient.Get().SendMessage(new StopMessage());
                     ProfilerClient.Get().SendMessage(new StartMessage());
                 }
@@ -65,7 +101,7 @@ namespace Profiler
                 socketThread = null;
 
                 // Connection was closed, save the data
-                FileStream stream = new FileStream("Test.prof", FileMode.Create);
+                FileStream stream = new FileStream(options.Output, FileMode.Create);
                 frames.Serialize(stream);
             }
 
