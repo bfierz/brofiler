@@ -17,11 +17,11 @@ namespace Profiler
 		// It is important to make private inheritance in order to avoid collision with default operator implementation
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const char* val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, int val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, uint32 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, int64 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, uint64 val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, uint32_t val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, int64_t val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, uint64_t val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, char val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, uint8_t val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
 	};
@@ -29,7 +29,7 @@ namespace Profiler
 	template<class T>
 	OutputDataStream& operator<<(OutputDataStream &stream, const std::vector<T>& val)
 	{
-		stream << (uint32)val.size();
+		stream << (uint32_t)val.size();
 
 		for (const T& element : val)
 		{
@@ -42,7 +42,7 @@ namespace Profiler
 	template<class T, size_t N>
 	OutputDataStream& operator<<(OutputDataStream &stream, const MemoryPool<T, N>& val)
 	{
-		stream << (uint32)val.Size();
+		stream << (uint32_t)val.Size();
 
 		val.ForEach([&](const T& data)
 		{
@@ -85,11 +85,11 @@ namespace Profiler
 			return true;
 		}
 
-		friend InputDataStream &operator >> ( InputDataStream &stream, byte &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, int32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, int64 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint64 &val );
+		friend InputDataStream &operator >> ( InputDataStream &stream, uint8_t &val );
+		friend InputDataStream &operator >> ( InputDataStream &stream, int32_t &val );
+		friend InputDataStream &operator >> ( InputDataStream &stream, uint32_t &val );
+		friend InputDataStream &operator >> ( InputDataStream &stream, int64_t &val );
+		friend InputDataStream &operator >> ( InputDataStream &stream, uint64_t &val );
 	};
 
 

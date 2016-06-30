@@ -21,7 +21,7 @@ namespace Profiler
 //	LocalFree(lpMsgBuf);
 //}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
+SymEngine::SymEngine() : hProcess(GetCurrentProcess())
 {
 	static_assert(sizeof(hProcess) >= sizeof(HANDLE), "Too small hProcess type");
 }

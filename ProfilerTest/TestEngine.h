@@ -1,5 +1,4 @@
 #pragma once
-#include "../ProfilerCore/Types.h"
 #include "../ProfilerCore/Thread.h"
 #include <vector>
 #include <cstdint>

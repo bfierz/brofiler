@@ -1,25 +1,28 @@
+#include "Hook.h"
 #include "Common.h"
 #include "Event.h"
 #include "Core.h"
 #include "Serialization.h"
 #include "Sampler.h"
 #include "SymEngine.h"
-#include <unordered_set>
 #include "HPTimer.h"
-#include "Hook.h"
+
+// C++ standard library
+#include <algorithm>
+#include <unordered_set>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CallStackTreeNode
 {
-	DWORD64 dwArddress;
-	uint32 invokeCount;
+	DWORD64 dwArddress{ 0 };
+	uint32_t invokeCount{ 0 };
 
 	std::list<CallStackTreeNode> children;
 
-	CallStackTreeNode()									: dwArddress(0), invokeCount(0) {}
-	CallStackTreeNode(DWORD64 address)	: dwArddress(address), invokeCount(0) {} 
+	CallStackTreeNode() = default;
+	CallStackTreeNode(DWORD64 address)	: dwArddress(address) {} 
 
 	bool Merge(const CallStack& callstack, size_t index)
 	{
@@ -49,9 +52,9 @@ struct CallStackTreeNode
 
 	OutputDataStream& Serialize(OutputDataStream& stream) const
 	{
-		stream << (uint64)dwArddress << invokeCount;
+		stream << (uint64_t)dwArddress << invokeCount;
 
-		stream << (uint32)children.size();
+		stream << (uint32_t)children.size();
 		for (const CallStackTreeNode& node : children)
 		{
 			node.Serialize(stream);
@@ -181,14 +184,14 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
 	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
-	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
+	return os << (uint64_t)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 {
 	BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
 
-	stream << (uint32)callstacks.size();
+	stream << (uint32_t)callstacks.size();
 
 	CallStackTreeNode tree;
 
@@ -247,7 +250,7 @@ size_t Sampler::GetCollectedCount() const
 	return callstacks.size();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Sampler::SetupHook(uint64 address, bool isHooked)
+bool Sampler::SetupHook(uint64_t address, bool isHooked)
 {
 	if (!isHooked && address == 0)
 	{
@@ -259,7 +262,7 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 		{
 			if (isHooked)
 			{
-				std::vector<ulong> threadIDs;
+				std::vector<uint32_t> threadIDs;
 
 				const auto& threads = Core::Get().GetThreads();
 				for (const auto& thread : threads)

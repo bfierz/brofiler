@@ -34,9 +34,9 @@ class MemoryPool
 	Chunk root;
 
 	Chunk* chunk;
-	uint index;
+	uint index{ 0 };
 
-	uint chunkCount;
+	uint chunkCount{ 1 };
 
 	BRO_INLINE void AddChunk()
 	{
@@ -52,7 +52,7 @@ class MemoryPool
 		++chunkCount;
 	}
 public:
-	MemoryPool() : index(0), chunk(&root), chunkCount(1)	{}
+	MemoryPool() : chunk(&root) {}
 
 	BRO_INLINE T& Add()
 	{
