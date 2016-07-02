@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef WINDOWS
-typedef uint64_t HOOK_TRACE_INFO;
+typedef void* HOOK_TRACE_INFO;
 #else
 #	include "easyhook.h"
 #endif
@@ -17,11 +17,10 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct HookDescription
 {
-	EventDescription* description;
+	EventDescription* description{ nullptr };
 	std::string nameString;
 	std::string fileString;
 
-	HookDescription() : description(nullptr) {}
 	void Init(const Symbol& symbol);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +38,8 @@ struct HookData
 
 	void Setup(Profiler::EventDescription* desc, void* address)
 	{
+		static_assert(sizeof(HookData) == 32, "HookData needs to compile to a size of 32 bytes");
+
 		returnAddress = nullptr;
 		originalAddress = address;
 		eventDescription = desc;
@@ -48,8 +49,11 @@ struct HookData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct HookSlotWrapper
 {
-	void* functionAddress;
-	HOOK_TRACE_INFO traceInfo;
+	//! Pointer to the function to call
+	void* functionAddress{ nullptr };
+
+	//! Stores the actual hook
+	HOOK_TRACE_INFO traceInfo{ nullptr };
 
 	HookData* hookData;
 	HookSlotFunction	hookFunction;
@@ -58,8 +62,6 @@ struct HookSlotWrapper
 
 	bool Clear();
 	bool Install(const Symbol& symbol, uint32_t threadID);
-
-	HookSlotWrapper();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Hook

@@ -26,49 +26,42 @@ class EasyHook
 	#endif
 
 	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhWaitForPendingRemovals)();
-	Function_LhWaitForPendingRemovals function_LhWaitForPendingRemovals;
+	Function_LhWaitForPendingRemovals function_LhWaitForPendingRemovals{ nullptr };
 
 	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhUninstallAllHooks)();
-	Function_LhUninstallAllHooks function_LhUninstallAllHooks;
+	Function_LhUninstallAllHooks function_LhUninstallAllHooks{ nullptr };
 
 	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhUninstallHook)(TRACED_HOOK_HANDLE InHandle);
-	Function_LhUninstallHook function_LhUninstallHook;
+	Function_LhUninstallHook function_LhUninstallHook{ nullptr };
 
 	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhSetInclusiveACL)(ULONG* InProcessIdList, ULONG InProcessCount, TRACED_HOOK_HANDLE InHandle);
-	Function_LhSetInclusiveACL function_LhSetInclusiveACL;
+	Function_LhSetInclusiveACL function_LhSetInclusiveACL{ nullptr };
 
 	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhInstallHook)(void* InEntryPoint, void* InHookProc, void* InCallback, TRACED_HOOK_HANDLE OutHandle);
-	Function_LhInstallHook function_LhInstallHook;
+	Function_LhInstallHook function_LhInstallHook{ nullptr };
 	
 public:
-	EasyHook() 
-		: function_LhWaitForPendingRemovals(nullptr), 
-			function_LhUninstallAllHooks(nullptr),
-			function_LhUninstallHook(nullptr), 
-			function_LhSetInclusiveACL(nullptr), 
-			function_LhInstallHook(nullptr)
+	EasyHook()
 	{
-		
-
-		#if defined(_WIN64)
-			if (HMODULE module = LoadLibrary("EasyHook64.dll"))
-			{
-				function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "LhWaitForPendingRemovals");
-				function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "LhUninstallAllHooks");
-				function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "LhUninstallHook");
-				function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "LhSetInclusiveACL");
-				function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "LhInstallHook");
-			}
-		#else
-			if (HMODULE module = LoadLibrary("EasyHook32.dll"))
-			{
-				function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "_LhWaitForPendingRemovals@0");
-				function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "_LhUninstallAllHooks@0");
-				function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "_LhUninstallHook@4");
-				function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "_LhSetInclusiveACL@12");
-				function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "_LhInstallHook@16");
-			}
-		#endif
+	#if defined(_WIN64)
+		if (HMODULE module = LoadLibrary("EasyHook64.dll"))
+		{
+			function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "LhWaitForPendingRemovals");
+			function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "LhUninstallAllHooks");
+			function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "LhUninstallHook");
+			function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "LhSetInclusiveACL");
+			function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "LhInstallHook");
+		}
+	#else
+		if (HMODULE module = LoadLibrary("EasyHook32.dll"))
+		{
+			function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "_LhWaitForPendingRemovals@0");
+			function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "_LhUninstallAllHooks@0");
+			function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "_LhUninstallHook@4");
+			function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "_LhSetInclusiveACL@12");
+			function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "_LhInstallHook@16");
+		}
+	#endif
 	}
 
 	LONG LhWaitForPendingRemovals()
@@ -196,11 +189,6 @@ bool HookSlotWrapper::Install(const Symbol& symbol, uint32_t threadID)
 	hookData->Setup(description->description, functionAddress);
 
 	return true;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-HookSlotWrapper::HookSlotWrapper() : functionAddress(nullptr)
-{
-	traceInfo.Link = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class TFunc>
