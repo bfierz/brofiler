@@ -94,10 +94,10 @@ bool SystemThread::Terminate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SystemSyncEvent::SystemSyncEvent()
 {
-	static_assert(sizeof(std::condition_variable) <= sizeof(eventHandler) * sizeof(eventHandler[0]), "Increase size of eventHandler");
-	static_assert(sizeof(std::mutex) <= sizeof(eventHandlerMutex) * sizeof(eventHandlerMutex[0]), "Increase size of eventHandlerMutex");
-	new (reinterpret_cast<void*>(&eventHandlerMutex[0])) std::mutex;
-	new (reinterpret_cast<void*>(&eventHandler[0])) std::condition_variable;
+	static_assert(sizeof(std::condition_variable) <= sizeof(eventHandler) , "Increase size of eventHandler");
+	static_assert(sizeof(std::mutex) <= sizeof(eventHandlerMutex), "Increase size of eventHandlerMutex");
+	new (reinterpret_cast<void*>(eventHandlerMutex)) std::mutex;
+	new (reinterpret_cast<void*>(eventHandler)) std::condition_variable;
 }
 
 SystemSyncEvent::~SystemSyncEvent()

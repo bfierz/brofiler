@@ -34,8 +34,8 @@ void AtomicDecrement(volatile uint* value);
 class SystemSyncEvent
 {
 private:
-	uint64_t eventHandlerMutex[4];
-	uint64_t eventHandler[4];
+	uint64_t eventHandlerMutex[5];
+	uint64_t eventHandler[6];
 public:
 	SystemSyncEvent();
 	~SystemSyncEvent();
