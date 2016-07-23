@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace Profiler
 {
@@ -16,12 +18,9 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context);
 class SystemSyncEvent
 {
 private:
-	uint64_t eventHandlerMutex[5];
-	uint64_t eventHandler[6];
+	std::mutex eventHandlerMutex;
+	std::condition_variable eventHandler;
 public:
-	SystemSyncEvent();
-	~SystemSyncEvent();
-
 	void Notify();
 	bool WaitForEvent( int millisecondsTimeout );
 };

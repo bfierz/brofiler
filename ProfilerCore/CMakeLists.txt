@@ -52,6 +52,7 @@ set(Common_SRC
 	Socket.h
 	SymEngine.h
 	Thread.h
+	Thread.cpp
 	Wsa.h
 	easyhook.h
 )

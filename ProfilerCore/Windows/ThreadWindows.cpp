@@ -39,33 +39,4 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SystemSyncEvent::SystemSyncEvent()
-{
-	eventHandler[0] = (uint64_t)CreateEvent(NULL, false, false, 0);
-}
-
-SystemSyncEvent::~SystemSyncEvent()
-{
-	CloseHandle((HANDLE)eventHandler[0]);
-	eventHandler[0] = 0;
-}
-	
-void SystemSyncEvent::Notify()
-{
-	SetEvent((HANDLE)eventHandler[0]);
-}
-
-bool SystemSyncEvent::WaitForEvent( int millisecondsTimeout )
-{
-	if (WaitForSingleObject((HANDLE)eventHandler[0], 0) == WAIT_TIMEOUT)
-	{
-		SpinSleep(millisecondsTimeout);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

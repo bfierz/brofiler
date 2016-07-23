@@ -41,40 +41,4 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context)
 {
 	memset(&context, 0, sizeof(CONTEXT));
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SystemSyncEvent::SystemSyncEvent()
-{
-	static_assert(sizeof(std::condition_variable) <= sizeof(eventHandler) , "Increase size of eventHandler");
-	static_assert(sizeof(std::mutex) <= sizeof(eventHandlerMutex), "Increase size of eventHandlerMutex");
-	new (reinterpret_cast<void*>(eventHandlerMutex)) std::mutex;
-	new (reinterpret_cast<void*>(eventHandler)) std::condition_variable;
-}
-
-SystemSyncEvent::~SystemSyncEvent()
-{
-	reinterpret_cast<std::mutex*>(&eventHandlerMutex[0])->~mutex();
-	reinterpret_cast<std::condition_variable*>(&eventHandler[0])->~condition_variable();
-}
-	
-void SystemSyncEvent::Notify()
-{
-	std::condition_variable *event = reinterpret_cast<std::condition_variable*>(&eventHandler[0]);
-	event->notify_all();
-}
-
-bool SystemSyncEvent::WaitForEvent( int millisecondsTimeout )
-{
-	std::unique_lock<std::mutex> mutexLock(*reinterpret_cast<std::mutex*>(&eventHandlerMutex[0]));
-	std::condition_variable *event = reinterpret_cast<std::condition_variable*>(&eventHandler[0]);
-	if( std::cv_status::no_timeout == event->wait_for(mutexLock, std::chrono::milliseconds(millisecondsTimeout) ) )
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
