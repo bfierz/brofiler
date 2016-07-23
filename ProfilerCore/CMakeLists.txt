@@ -1,23 +1,59 @@
-IF (WIN32)
-file(GLOB Platform_SRC
-    "Windows/*.h"
-    "Windows/*.cpp"
+set(Windows_SRC
+	CommonWindows.h
+	ConcurrencyWindows.h
+	ETWWindows.cpp
+	EasyHook32.lib
+	EasyHook64.lib
+	HPTimerWindows.cpp
+	HookWindows.cpp
+	SocketWindows.h
+	SymEngineWindows.cpp
+	ThreadWindows.cpp
 )
-ELSEIF(WIN64)
-file(GLOB Platform_SRC
-    "Windows/*.h"
-    "Windows/*.cpp"
-)
-ELSE()
-file(GLOB Platform_SRC
-    "Linux/*.h"
-    "Linux/*.cpp"
-)
-ENDIF()
+if (WIN32)
+	set(Platform_SRC ${Windows_SRC} HookFunctions32.asm)
+elseif(WIN64)
+	set(Platform_SRC ${Windows_SRC} HookFunctions64.asm)
+else()
+	set(Platform_SRC Linux/CommonLinux.h
+		Linux/ConcurrencyLinux.h
+		Linux/ETWLinux.cpp
+		Linux/HookLinux.cpp
+		Linux/HPTimerLinux.cpp
+		Linux/SocketLinux.h
+		Linux/SymEngineLinux.cpp
+		Linux/ThreadLinux.cpp)
+endif()
 
-file(GLOB Common_SRC
-    "*.h"
-    "*.cpp"
+set(Common_SRC
+	Brofiler.h
+	Common.h
+	Concurrency.h
+	Core.cpp
+	Core.h
+	ETW.h
+	Event.cpp
+	Event.h
+	EventDescriptionBoard.cpp
+	EventDescriptionBoard.h
+	Frame.hpp
+	HPTimer.h
+	Hook.h
+	HookFunction.h
+	MemoryPool.h
+	Message.cpp
+	Message.h
+	ProfilerServer.cpp
+	ProfilerServer.h
+	Sampler.cpp
+	Sampler.h
+	Serialization.cpp
+	Serialization.h
+	Socket.h
+	SymEngine.h
+	Thread.h
+	Wsa.h
+	easyhook.h
 )
 
 add_library (ProfilerCore ${Common_SRC} ${Platform_SRC})
