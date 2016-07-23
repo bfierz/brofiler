@@ -26,14 +26,6 @@ namespace Profiler
 		CriticalSection lock;
 		std::string errorMessage;
 
-		void Close()
-		{
-			if (listenSocket != 0)
-			{
-				shutdown(listenSocket, 2);
-				listenSocket = 0;
-			}
-		}
 
 		int Bind(short port)
 		{
@@ -74,6 +66,15 @@ namespace Profiler
 		{
 			Disconnect();
 			Close();
+		}
+
+		void Close()
+		{
+			if (listenSocket != 0)
+			{
+				shutdown(listenSocket, 2);
+				listenSocket = 0;
+			}
 		}
 
 		bool Bind(short startPort, short portRange)

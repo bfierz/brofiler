@@ -1,23 +1,16 @@
 #pragma once
-#include "../ProfilerCore/Thread.h"
 #include <vector>
+#include <thread>
 #include <cstdint>
-
-#if defined(WINDOWS)
-	typedef HANDLE ThreadID;
-#elif defined(LINUX64)
-	typedef Profiler::SystemThread ThreadID;
-#else
-#error "Wrong OS type"
-#endif
+#include <atomic>
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-		std::vector<ThreadID> workers;
-		bool isAlive;
+		std::vector<std::thread> workers;
+		std::atomic<bool> isAlive;
 
 		void UpdateInput();
 		void UpdateMessages();
@@ -34,6 +27,6 @@ namespace Test
 
 		void UpdatePhysics();
 
-		bool IsAlive() const { return isAlive; }
+		bool IsAlive() const { return isAlive.load(std::memory_order_acquire); }
 	};
 }

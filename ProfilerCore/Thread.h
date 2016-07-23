@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include <thread>
 
 namespace Profiler
 {
@@ -10,23 +11,7 @@ void ReleaseThreadHandle(HANDLE threadId);
 bool PauseThread(HANDLE threadId);
 bool ContinueThread(HANDLE threadId);
 bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SystemThread
-{
-public:
-	SystemThread() : threadId(0) {}
 
-	bool Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam );
-	bool Terminate();
-	bool Join();
-
-	operator bool() const { return threadId != 0; }
-private:
-	uint64_t threadId;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ThreadSleep(DWORD milliseconds);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AtomicIncrement(volatile uint* value);
 void AtomicDecrement(volatile uint* value);

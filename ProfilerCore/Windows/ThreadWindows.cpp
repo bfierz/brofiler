@@ -38,11 +38,6 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context)
 	return TRUE == GetThreadContext(threadHandle, &context);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ThreadSleep(DWORD milliseconds)
-{
-	Sleep(milliseconds);	
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AtomicIncrement(volatile uint* value)
 {
 	InterlockedIncrement(value);
@@ -52,37 +47,7 @@ void AtomicDecrement(volatile uint* value)
 {
 	InterlockedDecrement(value);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam )
-{
-    static_assert(sizeof(uint64_t) >= sizeof(HANDLE), "Handler is too long to be stored in uint64_t");
-	threadId = (uint64_t)CreateThread(NULL, 0, Action, lpParam, 0, NULL);
-	return threadId != 0;
-}
-
-bool SystemThread::Join()
-{
-	DWORD result = WaitForSingleObject((HANDLE)threadId, INFINITE);
-	return result != WAIT_OBJECT_0;
-}
-
-bool SystemThread::Terminate()
-{
-	bool result = true;
-	if (threadId)
-	{
-		TerminateThread((HANDLE)threadId, 0);
-		DWORD resultCode = WaitForSingleObject((HANDLE)threadId, INFINITE);
-		if (resultCode == WAIT_OBJECT_0)
-		{
-			result = false;
-		}
-		CloseHandle((HANDLE)threadId);
-		threadId = 0;
-	}
-	return result;
-}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SystemSyncEvent::SystemSyncEvent()
 {

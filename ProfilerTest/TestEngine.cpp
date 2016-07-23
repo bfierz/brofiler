@@ -2,60 +2,24 @@
 #include "../ProfilerCore/Brofiler.h"
 #include <math.h>
 #include <vector>
-
-#if defined(WINDOWS)
-#include <windows.h>
-#elif !defined(LINUX64)
-#error "Wrong OS type"
-#endif
+#include <chrono>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Test
 {
 
-namespace
-{
-void ThreadSleep(int milliseconds)
-{
-#if defined(WINDOWS)
-	Sleep(milliseconds);
-#elif defined(LINUX64)
-	Profiler::ThreadSleep(5);
-#else
-#error "Wrong OS type"
-#endif
-}
-
-
-void ThreadTerminate( ThreadID& threadId )
-{
-#if defined(WINDOWS)
-	::TerminateThread(threadId, 0);
-	DWORD resultCode = WaitForSingleObject((HANDLE)threadId, INFINITE);
-	CloseHandle((HANDLE)threadId);
-#elif defined(LINUX64)
-	threadId.Terminate();
-#else
-#error "Wrong OS type"
-#endif
-}
-
-}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI WorkerThread(PVOID params)
+void WorkerThread(Engine* engine)
 {
-	BROFILER_THREAD("Worker")
-	Engine* engine = (Engine*)params;
+	BROFILER_THREAD("Worker");
 
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		ThreadSleep(5); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		engine->UpdatePhysics();
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const uint REPEAT_COUNT = 256 * 1024;
@@ -137,27 +101,19 @@ const size_t WORKER_THREAD_COUNT = 2;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::Engine() : isAlive(true)
 {
-	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
-	{
-#if defined(WINDOWS)
-		workers.push_back( CreateThread(NULL, 0, WorkerThread, this, 0, NULL) );
-#elif defined(LINUX64)
-		workers.push_back(Profiler::SystemThread());
-		workers.back().Create( WorkerThread, this );
-#else
-#error "Wrong OS type"
-#endif
-		
+	isAlive.store(true);
+	workers.resize(WORKER_THREAD_COUNT);
+	for(auto& thread: workers) {
+		thread = std::thread([this]() { WorkerThread(this);});
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
-	isAlive = false;
+	isAlive.store(false, std::memory_order_release);
 
-	for (size_t i = 0; i < workers.size(); ++i)
-	{
-		ThreadTerminate( workers[i] );
+	for(auto& thread: workers) {
+		thread.join();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

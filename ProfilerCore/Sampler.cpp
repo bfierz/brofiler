@@ -71,14 +71,7 @@ bool Sampler::StopSampling()
 
 	finishEvent.Notify();
 	
-	bool result = workerThread.Join();
-	BRO_UNUSED(result);
-	BRO_ASSERT(result, "Can't stop sampling thread!");
-	
-	result = workerThread.Terminate();
-	BRO_UNUSED(result);
-	BRO_ASSERT(result, "Can't stop sampling thread!");
-
+	workerThread.join();
 	targetThreads.clear();
 
 	return true;
@@ -109,22 +102,20 @@ void Sampler::StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& thr
 
 	callstacks.clear();
 
-	workerThread.Create( &Sampler::AsyncUpdate, this );
+	workerThread = std::thread([this](){AsyncUpdate();});
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
 {
-	return (bool)workerThread;
+	return workerThread.joinable();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
+void Sampler::AsyncUpdate()
 {
-	Sampler& sampler = *(Sampler*)(lpParam);
-
 	std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
-	openThreads.reserve(sampler.targetThreads.size());
+	openThreads.reserve(targetThreads.size());
 
-	for (ThreadEntry* entry : sampler.targetThreads)
+	for (ThreadEntry* entry : targetThreads)
 	{
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
@@ -137,13 +128,13 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	}
 
 	if (openThreads.empty())
-		return 0;
+		return ;
 
 	CallStackBuffer buffer;
 
 	CONTEXT context;
 
-	while ( sampler.finishEvent.WaitForEvent(sampler.intervalMicroSeconds) )
+	while ( finishEvent.WaitForEvent(intervalMicroSeconds) )
 	{
 		// Check whether we are inside sampling scope
 		for (const auto& entry : openThreads)
@@ -161,14 +152,14 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
 				if (thread->storage.isSampling && RetrieveThreadContext(handle, context))
 				{
-					count = sampler.symEngine.GetCallstack(handle, context, buffer);
+					count = symEngine.GetCallstack(handle, context, buffer);
 				}
 				ContinueThread(handle);
 			}
 
 			if (count > 0)
 			{
-				sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
+				callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
 			}
 		}
 	}
@@ -177,8 +168,6 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	{
 		ReleaseThreadHandle(entry.first);
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)

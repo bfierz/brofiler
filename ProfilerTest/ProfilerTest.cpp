@@ -11,7 +11,12 @@ int main(int, char **)
 	cout << "Engine successfully created." << endl;
 
 	cout << "Starting main loop update." << endl;
-	while( engine.Update() ) { cout<<'.'; cout.flush(); }
-	
+	for(int i = 0; i < 10; ++i) {
+		std::cout << '.'; cout.flush();
+		engine.Update();
+	}
+	//while( engine.Update() ) { cout<<'.'; cout.flush(); }
+
+	std::cout << std::endl;
 	return 0;
 }
