@@ -37,16 +37,6 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context)
 	context.ContextFlags = CONTEXT_FULL;
 	return TRUE == GetThreadContext(threadHandle, &context);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AtomicIncrement(volatile uint* value)
-{
-	InterlockedIncrement(value);
-}
-
-void AtomicDecrement(volatile uint* value)
-{
-	InterlockedDecrement(value);
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SystemSyncEvent::SystemSyncEvent()

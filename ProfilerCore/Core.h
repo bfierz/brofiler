@@ -7,6 +7,7 @@
 #include "ETW.h"
 
 #include <memory>
+#include <atomic>
 
 namespace Profiler
 {
@@ -74,7 +75,7 @@ struct EventStorage
 	CategoryBuffer categoryBuffer; 
 	SynchronizationBuffer synchronizationBuffer;
 
-	volatile uint isSampling{ 0 };
+	std::atomic<uint> isSampling{ 0 };
 
 	BRO_INLINE EventData& NextEvent() 
 	{

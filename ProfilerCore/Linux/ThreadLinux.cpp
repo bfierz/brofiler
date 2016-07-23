@@ -43,16 +43,6 @@ bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AtomicIncrement(volatile uint* value)
-{
-	__sync_fetch_and_add(value, 1);
-}
-
-void AtomicDecrement(volatile uint* value)
-{
-	__sync_fetch_and_add(value, -1);	
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SystemSyncEvent::SystemSyncEvent()
 {
 	static_assert(sizeof(std::condition_variable) <= sizeof(eventHandler) , "Increase size of eventHandler");
