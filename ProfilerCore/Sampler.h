@@ -23,7 +23,7 @@ class Sampler
 	std::vector<ThreadEntry*> targetThreads;
 
 	std::thread workerThread;
-	SystemSyncEvent finishEvent;
+	SyncEvent finishEvent;
 
 	uint intervalMicroSeconds;
 

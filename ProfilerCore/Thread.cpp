@@ -8,12 +8,12 @@
 namespace Profiler
 {
 
-void SystemSyncEvent::Notify()
+void SyncEvent::Notify()
 {
 	eventHandler.notify_all();
 }
 
-bool SystemSyncEvent::WaitForEvent( int millisecondsTimeout )
+bool SyncEvent::WaitForEvent( int millisecondsTimeout )
 {
 	std::unique_lock<std::mutex> mutexLock(eventHandlerMutex);
 	if(std::cv_status::no_timeout == eventHandler.wait_for(mutexLock, std::chrono::milliseconds(millisecondsTimeout)))

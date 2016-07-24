@@ -15,7 +15,7 @@ bool ContinueThread(HANDLE threadId);
 bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SystemSyncEvent
+class SyncEvent
 {
 private:
 	std::mutex eventHandlerMutex;
