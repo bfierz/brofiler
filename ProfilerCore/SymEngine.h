@@ -44,7 +44,7 @@ public:
 	const Symbol * const GetSymbol(DWORD64 dwAddress);
 
 	// Collects Callstack
-	uint GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack);
+	uint GetCallstack(HANDLE hThread, CallStackBuffer& callstack);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

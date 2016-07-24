@@ -132,8 +132,6 @@ void Sampler::AsyncUpdate()
 
 	CallStackBuffer buffer;
 
-	CONTEXT context;
-
 	while ( finishEvent.WaitForEvent(intervalMicroSeconds) )
 	{
 		// Check whether we are inside sampling scope
@@ -145,22 +143,13 @@ void Sampler::AsyncUpdate()
 			if (!thread->storage.isSampling)
 				continue;
 
-			uint count = 0;
-
-			if (PauseThread(handle))
-			{
-				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (thread->storage.isSampling && RetrieveThreadContext(handle, context))
-				{
-					count = symEngine.GetCallstack(handle, context, buffer);
-				}
-				ContinueThread(handle);
-			}
-
+			uint count = symEngine.GetCallstack(handle, buffer);
 			if (count > 0)
 			{
 				callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
 			}
+
+
 		}
 	}
 
