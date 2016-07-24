@@ -353,6 +353,7 @@
     <ClCompile Include="ProfilerServer.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Serialization.cpp" />
+    <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Windows\ETWWindows.cpp" />
     <ClCompile Include="Windows\HookWindows.cpp" />
     <ClCompile Include="Windows\HPTimerWindows.cpp" />

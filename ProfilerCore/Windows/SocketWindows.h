@@ -42,7 +42,8 @@ namespace Profiler
 
 		CriticalSection lock;
 		std::string errorMessage;
-
+	
+	public:
 		void Close()
 		{
 			if (listenSocket != INVALID_SOCKET)
@@ -52,6 +53,7 @@ namespace Profiler
 			}
 		}
 
+	private:
 		int Bind(short port)
 		{
 			address.sin_family      = AF_INET;
