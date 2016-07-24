@@ -1,14 +1,14 @@
 set(Windows_SRC
-	CommonWindows.h
-	ConcurrencyWindows.h
-	ETWWindows.cpp
-	EasyHook32.lib
-	EasyHook64.lib
-	HPTimerWindows.cpp
-	HookWindows.cpp
-	SocketWindows.h
-	SymEngineWindows.cpp
-	ThreadWindows.cpp
+	Windows/CommonWindows.h
+	Windows/ConcurrencyWindows.h
+	Windows/ETWWindows.cpp
+	Windows/EasyHook32.lib
+	Windows/EasyHook64.lib
+	Windows/HPTimerWindows.cpp
+	Windows/HookWindows.cpp
+	Windows/SocketWindows.h
+	Windows/SymEngineWindows.cpp
+	Windows/ThreadWindows.cpp
 )
 if (WIN32)
 	set(Platform_SRC ${Windows_SRC} HookFunctions32.asm)
@@ -22,7 +22,9 @@ else()
 		Linux/HPTimerLinux.cpp
 		Linux/SocketLinux.h
 		Linux/SymEngineLinux.cpp
-		Linux/ThreadLinux.cpp)
+		Linux/ThreadLinux.cpp
+		${Windows_SRC})
+	set_source_files_properties(${Windows_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 endif()
 
 set(Common_SRC
