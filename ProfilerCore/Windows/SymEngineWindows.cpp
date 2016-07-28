@@ -1,4 +1,5 @@
 #include "../SymEngine.h"
+#include "../Thread.h"
 
 #include <windows.h>
 #include <DbgHelp.h>
@@ -134,7 +135,7 @@ void SymEngine::Close()
 uint SymEngine::GetCallstack(HANDLE hThread, CallStackBuffer& callstack)
 {
 	uint index = 0;
-	if (PauseThread(handle))
+	if (PauseThread(hThread))
 	{
 		CONTEXT context;
 		// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
@@ -190,7 +191,7 @@ uint SymEngine::GetCallstack(HANDLE hThread, CallStackBuffer& callstack)
 			}
 
 		}
-		ContinueThread(handle);
+		ContinueThread(hThread);
 	}
 	return index;
 }
