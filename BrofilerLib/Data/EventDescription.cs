@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Media;
 
 namespace Profiler.Data
 {
@@ -51,10 +50,9 @@ namespace Profiler.Data
 
         private int id;
 
-        public Color Color { get; private set; }
-        public Brush Brush { get; private set; }
+        public UInt32 Color { get; private set; }
 
-        public bool IsSleep { get { return Color == Colors.White; } }
+        public bool IsSleep { get { return Color == 0xFFFFFFFF; } }
 
         public EventDescription() { }
         public EventDescription(String name, int id)
@@ -76,13 +74,8 @@ namespace Profiler.Data
             desc.Path = new FileLine(new String(reader.ReadChars(fileLength)), reader.ReadInt32());
 
             UInt32 color = reader.ReadUInt32();
-            desc.Color = Color.FromArgb((byte)(color >> 24),
-                                        (byte)(color >> 16),
-                                        (byte)(color >> 8),
-                                        (byte)(color));
-
-            desc.Brush = new SolidColorBrush(desc.Color);
-
+            desc.Color = color;
+            
             byte flags = reader.ReadByte();
             desc.isSampling = (flags & IS_SAMPLING_FLAG) != 0;
 

@@ -8,4 +8,5 @@ xcopy /Y Release\x64\ProfilerCore64.lib ..\publish\ProfilerCore64.lib
 xcopy /Y Release\x64\ProfilerCore64.pdb ..\publish\ProfilerCore64.pdb
 xcopy /Y Release\x64\BrofilerLib.dll ..\publish\BrofilerLib.dll
 xcopy /Y Release\x64\Brofiler.exe ..\publish\Brofiler.exe
+xcopy /Y Release\x64\Brofiler.exe ..\publish\BrofilerCmd.exe
 xcopy /Y ProfilerCore\Brofiler.h ..\publish\Brofiler.h

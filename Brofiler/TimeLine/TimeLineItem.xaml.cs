@@ -32,17 +32,30 @@ namespace Profiler
 			Init();
 		}
 
-		void InitNode(EventNode node, double frameStartMS, int level)
+        Dictionary<UInt32, Brush> brushes = new Dictionary<uint, Brush>();
+
+        void InitNode(EventNode node, double frameStartMS, int level)
 		{
 			double height = FrameHeightConverter.Convert(node.Entry.Duration);
 
 			if (height < 6.0 && level != 0)
 				return;
 
-			Rectangle rect = new Rectangle();
+            if (brushes.ContainsKey(node.Entry.Description.Color) == false)
+            {
+                UInt32 color = node.Entry.Description.Color;
+                var sysColor = Color.FromArgb((byte)(color >> 24),
+                                              (byte)(color >> 16),
+                                              (byte)(color >> 8),
+                                              (byte)(color));
+                var brush = new SolidColorBrush(sysColor);
+                brushes.Add(color, brush);
+            }
+
+            Rectangle rect = new Rectangle();
 			rect.Width = double.NaN;
 			rect.Height = height;
-			rect.Fill = new SolidColorBrush(node.Entry.Description.Color);
+            rect.Fill = brushes[node.Entry.Description.Color];
 
 			double startTime = (node.Entry.StartMS - frameStartMS);
 			rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);

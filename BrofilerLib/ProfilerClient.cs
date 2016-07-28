@@ -29,6 +29,11 @@ namespace Profiler
 
         #region SocketWork
 
+        public bool IsConnected
+        {
+            get { return client.Connected; }
+        }
+
         public DataResponse RecieveMessage()
         {
             try
@@ -59,36 +64,71 @@ namespace Profiler
             return null;
         }
 
+        /// <summary>
+        /// IP address of the server
+        /// </summary>
         private IPAddress ipAddress;
+
+        /// <summary>
+        /// Port to which the client connects
+        /// </summary>
         private int port = -1;
 
+        /// <summary>
+        /// Range of ports to test
+        /// </summary>
         const int PORT_RANGE = 8;
 
-        private bool CheckConnection()
+        /// <summary>
+        /// Check connection to server, if not connected, try to establish connection
+        /// </summary>
+        /// <param name="timeout">Timeout for connection building</param>
+        /// <returns>true, if the connection is already or could be established.</returns>
+        public bool CheckConnection(int timeout)
         {
             lock (criticalSection)
             {
                 if (!client.Connected)
                 {
+                    // Test a range of ports to connect to the server
                     for (int currentPort = port; currentPort < port + PORT_RANGE; ++currentPort)
                     {
                         try
                         {
-                            client.Connect(new IPEndPoint(ipAddress, currentPort));
-                            return true;
+                            if (timeout > 0)
+                            {
+                                var result = client.BeginConnect(ipAddress, currentPort, null, null);
+                                var success = result.AsyncWaitHandle.WaitOne(timeout);
+
+                                client.EndConnect(result);
+                                if (!success)
+                                {
+                                    client.Close();
+                                }
+                                return success;
+                            }
+                            else
+                            {
+                                client.Connect(new IPEndPoint(ipAddress, currentPort));
+                                return true;
+                            }
                         }
-                        catch (SocketException) { }
+                        catch (SocketException)
+                        {
+                            // Failed to connect
+                        }
                     }
                 }
             }
+
             return false;
         }
-
+        
         public bool SendMessage(Message message)
         {
             try
             {
-                CheckConnection();
+                CheckConnection(0);
 
                 lock (criticalSection)
                 {
@@ -136,7 +176,7 @@ namespace Profiler
                 }
             }
         }
-
+        
         #endregion
     }
 }
