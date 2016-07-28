@@ -70,7 +70,7 @@ void SymEngine::Close()
 	
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
+uint SymEngine::GetCallstack(HANDLE hThread, CallStackBuffer& callstack)
 {
 	int nptrs = 0;
 #define SIZE 512

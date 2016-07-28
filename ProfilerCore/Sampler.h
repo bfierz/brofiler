@@ -7,6 +7,7 @@
 #include <list>
 #include <memory>
 #include <vector>
+#include <thread>
 
 namespace Profiler
 {
@@ -21,13 +22,13 @@ class Sampler
 	std::list<CallStack> callstacks;
 	std::vector<ThreadEntry*> targetThreads;
 
-	SystemThread workerThread;
-	SystemSyncEvent finishEvent;
+	std::thread workerThread;
+	SyncEvent finishEvent;
 
 	uint intervalMicroSeconds;
 
 	// Called from worker thread
-	static DWORD WINAPI AsyncUpdate( LPVOID lpParam );
+	void AsyncUpdate();
 public:
 	Sampler();
 	~Sampler();

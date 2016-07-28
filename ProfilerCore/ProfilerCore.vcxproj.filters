@@ -109,6 +109,9 @@
     <ClCompile Include="Windows\ThreadWindows.cpp">
       <Filter>Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="HookFunction64.asm">

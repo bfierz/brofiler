@@ -1,5 +1,8 @@
 #pragma once
 #include "Common.h"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace Profiler
 {
@@ -10,36 +13,14 @@ void ReleaseThreadHandle(HANDLE threadId);
 bool PauseThread(HANDLE threadId);
 bool ContinueThread(HANDLE threadId);
 bool RetrieveThreadContext(HANDLE threadHandle, CONTEXT& context);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SystemThread
-{
-public:
-	SystemThread() : threadId(0) {}
-
-	bool Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam );
-	bool Terminate();
-	bool Join();
-
-	operator bool() const { return threadId != 0; }
-private:
-	uint64_t threadId;
-};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ThreadSleep(DWORD milliseconds);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void AtomicIncrement(volatile uint* value);
-void AtomicDecrement(volatile uint* value);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SystemSyncEvent
+class SyncEvent
 {
 private:
-	uint64_t eventHandlerMutex[4];
-	uint64_t eventHandler[4];
+	std::mutex eventHandlerMutex;
+	std::condition_variable eventHandler;
 public:
-	SystemSyncEvent();
-	~SystemSyncEvent();
-
 	void Notify();
 	bool WaitForEvent( int millisecondsTimeout );
 };

@@ -36,7 +36,7 @@ EventData* Event::Start(const EventDescription& description)
 
 		if (description.isSampling)
 		{
-			AtomicIncrement(&storage->isSampling);
+			storage->isSampling += 1;
 		}
 	}
 	return result;
@@ -49,7 +49,7 @@ void Event::Stop(EventData& data)
 	if (data.description->isSampling)
 	{
 		if (EventStorage* storage = Core::storage)
-			AtomicDecrement(&storage->isSampling);
+			storage->isSampling -= 1;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

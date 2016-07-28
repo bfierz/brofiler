@@ -34,7 +34,7 @@ void SpinSleep(uint32_t microSeconds)
 	int64_t time = GetTimeMicroSeconds() + microSeconds;
 	while(GetTimeMicroSeconds() < time)
 	{
-		ThreadSleep(0);
+		std::this_thread::yield();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
