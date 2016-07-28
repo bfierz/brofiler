@@ -2,8 +2,8 @@
 #include "ProfilerServer.h"
 
 #include "Socket.h"
-#include <winbase.h>
 #include "Message.h"
+#include <memory>
 
 #pragma comment( lib, "ws2_32.lib" )
 
@@ -12,8 +12,9 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket()), acceptThread(0)
+Server::Server(short port) : socket(std::make_unique<Socket>())
 {
+	running.store(true);
 	socket->Bind(port, 8);
 	socket->Listen();
 }
@@ -43,16 +44,15 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 
 	std::string data = stream.GetData();
 
-	DataResponse response(type, (uint32)data.size());
+	DataResponse response(type, (uint32_t)data.size());
 	socket->Send((char*)&response, sizeof(response));
 	socket->Send(data.c_str(), data.size());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Server::InitConnection()
 {
-	if (!acceptThread)
-	{
-		acceptThread = CreateThread(NULL, 0, &Server::AsyncAccept, this, 0, NULL);
+	if (!acceptThread) {
+		acceptThread = std::make_unique<std::thread>([this](){AsyncAccept();});
 		return true;
 	}
 	return false;
@@ -60,19 +60,9 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
-	if (acceptThread)
-	{
-		TerminateThread(acceptThread, 0);
-		WaitForSingleObject(acceptThread, INFINITE);
-		CloseHandle(acceptThread);
-		acceptThread = 0;
-	}
-
-	if (socket)
-	{
-		delete socket;
-		socket = nullptr;
-	}
+	running.store(false, std::memory_order_release);
+	socket->Close();
+	acceptThread->join();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server & Server::Get()
@@ -81,22 +71,11 @@ Server & Server::Get()
 	return instance;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::Accept()
+void Server::AsyncAccept()
 {
-	socket->Accept();
-	return true;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI Server::AsyncAccept( LPVOID lpParam )
-{
-	Server* server = (Server*)lpParam;
-
-	while (server->Accept())
-	{
-		Sleep(1000);
+	while (running.load(std::memory_order_acquire)) {
+		socket->Accept();
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

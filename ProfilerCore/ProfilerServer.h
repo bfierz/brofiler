@@ -2,6 +2,9 @@
 
 #include "Concurrency.h"
 #include "Message.h"
+#include "Thread.h"
+#include <thread>
+#include <atomic>
 
 namespace Profiler
 {
@@ -11,12 +14,13 @@ class Socket;
 class Server
 {
 	InputDataStream networkStream;
+	std::atomic<bool> running;
 
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	HANDLE acceptThread;
-	Socket* socket;
+	std::unique_ptr<std::thread> acceptThread;
+	std::unique_ptr<Socket> socket;
 
 	CriticalSection lock;
 	
@@ -25,7 +29,7 @@ class Server
 
 	bool InitConnection();
 
-	static DWORD WINAPI AsyncAccept( LPVOID lpParam );
+	void AsyncAccept( );
 	bool Accept();
 public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);

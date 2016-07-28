@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include <new>
+#include <cstring>
 
 namespace Profiler
 {
@@ -19,7 +20,7 @@ struct MemoryChunk
 		if (next)
 		{
 			next->~MemoryChunk();
-			_aligned_free(next);
+			FREE_ALIGN(next);
 			next = 0;
 			prev = 0;
 		}
@@ -33,16 +34,16 @@ class MemoryPool
 	Chunk root;
 
 	Chunk* chunk;
-	uint index;
+	uint index{ 0 };
 
-	uint chunkCount;
+	uint chunkCount{ 1 };
 
 	BRO_INLINE void AddChunk()
 	{
 		index = 0;
 		if (!chunk->next)
 		{
-			void* ptr = _aligned_malloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
+			void* ptr = MALLOC_ALIGN(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
 			chunk->next = new (ptr) Chunk();
 			chunk->next->prev = chunk;
 		}
@@ -51,7 +52,7 @@ class MemoryPool
 		++chunkCount;
 	}
 public:
-	MemoryPool() : index(0), chunk(&root), chunkCount(1)	{}
+	MemoryPool() : chunk(&root) {}
 
 	BRO_INLINE T& Add()
 	{
@@ -94,7 +95,7 @@ public:
 			if (root.next)
 			{
 				root.next->~MemoryChunk();
-				_aligned_free(root.next);
+				FREE_ALIGN(root.next);
 				root.next = 0;
 			}
 		}

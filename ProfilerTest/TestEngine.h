@@ -1,14 +1,16 @@
 #pragma once
-#include <windows.h>
 #include <vector>
+#include <thread>
+#include <cstdint>
+#include <atomic>
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-		std::vector<HANDLE> workers;
-		bool isAlive;
+		std::vector<std::thread> workers;
+		std::atomic<bool> isAlive;
 
 		void UpdateInput();
 		void UpdateMessages();
@@ -25,6 +27,6 @@ namespace Test
 
 		void UpdatePhysics();
 
-		bool IsAlive() const { return isAlive; }
+		bool IsAlive() const { return isAlive.load(std::memory_order_acquire); }
 	};
 }

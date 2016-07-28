@@ -1,22 +1,21 @@
 #pragma once
 #include "Common.h"
 #include <string>
-#include <windows.h>
 #include <unordered_map>
 #include <array>
+#include <vector>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Symbol
 {
-	DWORD64 address;
-	DWORD64 offset;
+	DWORD64 address{ 0 };
+	DWORD64 offset{ 0 };
 	std::wstring module;
 	std::wstring file;
 	std::wstring function;
-	uint32			 line;
-	Symbol() : line(0), offset(0), address(0) {}
+	uint32_t line{ 0 };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::array<DWORD64, 512> CallStackBuffer;
@@ -28,10 +27,10 @@ class SymEngine
 	HANDLE hProcess;
 	SymbolCache cache;
 
-	bool isInitialized;
+	bool isInitialized{ false };
 
-	bool needRestorePreviousSettings;
-	DWORD previousOptions;
+	bool needRestorePreviousSettings{ false };
+	DWORD previousOptions{ 0 };
 	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
 	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
 public:
@@ -45,7 +44,7 @@ public:
 	const Symbol * const GetSymbol(DWORD64 dwAddress);
 
 	// Collects Callstack
-	uint GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack);
+	uint GetCallstack(HANDLE hThread, CallStackBuffer& callstack);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

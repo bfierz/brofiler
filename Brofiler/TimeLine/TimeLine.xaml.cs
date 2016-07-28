@@ -35,11 +35,24 @@ namespace Profiler
     /// </summary>
     public partial class TimeLine : UserControl
     {
+        /// <summary>
+        /// Storage for all the collected frames
+        /// </summary>
         FrameCollection frames = new FrameCollection();
+
+        /// <summary>
+        /// Message receiving thread
+        /// </summary>
         Thread socketThread = null;
 
+        /// <summary>
+        /// Internal syncing object
+        /// </summary>
         Object criticalSection = new Object();
 
+        /// <summary>
+        /// This web-client is used to check online for the availability of a new version
+        /// </summary>
         WebClient checkVersion;
 
         public TimeLine()
@@ -67,7 +80,9 @@ namespace Profiler
 
         void TimeLine_Loaded(object sender, RoutedEventArgs e)
         {
-            checkVersion = new WebClient();
+            // Do not execute the version check as long as we don't have a new location
+            // to check for one
+            /*checkVersion = new WebClient();
 
             checkVersion.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
             checkVersion.DownloadStringCompleted += new DownloadStringCompletedEventHandler(OnVersionDownloaded);
@@ -79,8 +94,7 @@ namespace Profiler
             catch (Exception ex)
             {
                 Debug.Print(ex.Message);
-            }
-
+            }*/
         }
 
         void OnVersionDownloaded(object sender, DownloadStringCompletedEventArgs e)

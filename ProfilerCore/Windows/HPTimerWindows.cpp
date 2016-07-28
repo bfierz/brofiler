@@ -1,10 +1,10 @@
-#include "HPTimer.h"
+#include "../HPTimer.h"
 #include <windows.h>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int64 CalculateFrequency()
+int64_t CalculateFrequency()
 {
 	LARGE_INTEGER frequency;
 	QueryPerformanceFrequency(&frequency);
@@ -12,37 +12,37 @@ int64 CalculateFrequency()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Updated once on boot
-static const int64 TIMER_FREQUENCY = CalculateFrequency(); 
+static const int64_t TIMER_FREQUENCY = CalculateFrequency();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int64 GetTime()
+int64_t GetTime()
 {
 	LARGE_INTEGER largeInteger;
 	QueryPerformanceCounter( &largeInteger );
 	return largeInteger.QuadPart;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int64 GetFrequency()
+int64_t GetFrequency()
 {
 	return TIMER_FREQUENCY;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int64 GetTimeMilliSeconds()
+int64_t GetTimeMilliSeconds()
 {
 	LARGE_INTEGER largeInteger;
 	QueryPerformanceCounter( &largeInteger );
-	return ( largeInteger.QuadPart * int64(1000) ) / GetFrequency();
+	return ( largeInteger.QuadPart * int64_t(1000) ) / GetFrequency();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int64 GetTimeMicroSeconds()
+int64_t GetTimeMicroSeconds()
 {
 	LARGE_INTEGER largeInteger;
 	QueryPerformanceCounter( &largeInteger );
-	return ( largeInteger.QuadPart * int64(1000000) ) / GetFrequency();
+	return ( largeInteger.QuadPart * int64_t(1000000) ) / GetFrequency();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SpinSleep(uint32 microSeconds)
+void SpinSleep(uint32_t microSeconds)
 {
-	int64 time = GetTimeMicroSeconds() + microSeconds;
+	int64_t time = GetTimeMicroSeconds() + microSeconds;
 	while(GetTimeMicroSeconds() < time)
 	{
 		Sleep(0);

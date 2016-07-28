@@ -10,14 +10,12 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct MessageHeader
 {
-	uint32 mark;
-	uint32 length;
+	uint32_t mark{ 0 };
+	uint32_t length{ 0 };
 
-	static const uint32 MESSAGE_MARK = 0xB50FB50F;
+	static const uint32_t MESSAGE_MARK = 0xB50FB50F;
 
 	bool IsValid() const { return mark == MESSAGE_MARK; }
-
-	MessageHeader() : mark(0), length(0) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MessageFactory
@@ -59,7 +57,7 @@ public:
 
 		size_t length = str.Length();
 
-		int32 messageType = IMessage::COUNT;
+		int32_t messageType = IMessage::COUNT;
 		str >> messageType;
 
 		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
@@ -78,7 +76,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val)
 {
-	return os << val.version << (uint32)val.type;
+	return os << val.version << (uint32_t)val.type;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

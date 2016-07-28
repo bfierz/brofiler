@@ -1,41 +1,35 @@
 #pragma once
 
-#include <windows.h>
+#ifdef LINUX64
+#include "Linux/ConcurrencyLinux.h"
+#else
+#include "Windows/ConcurrencyWindows.h"
+#endif
 
 namespace Profiler
 {
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	class CriticalSection
-	{
-		CRITICAL_SECTION sect;
-		CriticalSection( const CriticalSection & ) {}
-		CriticalSection& operator=( const CriticalSection&) {}
-		
-		void Enter() { EnterCriticalSection( &sect ); }
-		void Leave() { LeaveCriticalSection( &sect ); }
-	public:
-		CriticalSection() { InitializeCriticalSection( &sect ); }
-		~CriticalSection() { DeleteCriticalSection( &sect ); }
-		friend class CriticalSectionScope;
-	};
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	class CriticalSectionScope
-	{
-		CriticalSection &section;
-	private:
-		CriticalSectionScope &operator=( CriticalSectionScope& ) {}
-	public:
-		CriticalSectionScope( CriticalSection& _lock ) : section(_lock) 
-		{
-			section.Enter(); 
-		}
 
-		~CriticalSectionScope() 
-		{ 
-			section.Leave(); 
-		}
-	};
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	#define CRITICAL_SECTION(criticalSection) CriticalSectionScope generatedCriticalSectionScope##__LINE__(criticalSection); 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class CriticalSectionScope
+{
+	CriticalSection &section;
+
+public:
+	CriticalSectionScope( CriticalSection& _lock ) : section(_lock) 
+	{
+		section.Enter(); 
+	}
+
+	~CriticalSectionScope() 
+	{ 
+		section.Leave(); 
+	}
+
+	CriticalSectionScope(const CriticalSectionScope&) = delete;
+	CriticalSectionScope& operator=(const CriticalSectionScope&) = delete;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define CRITICAL_SECTION(criticalSection) CriticalSectionScope generatedCriticalSectionScope##__LINE__(criticalSection); 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

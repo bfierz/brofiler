@@ -1,25 +1,28 @@
-#include "Common.h"
 #include "Hook.h"
+#include "Common.h"
 #include "Event.h"
 #include "Core.h"
 #include "Serialization.h"
 #include "Sampler.h"
-#include <DbgHelp.h>
-#include <unordered_set>
+#include "SymEngine.h"
 #include "HPTimer.h"
+
+// C++ standard library
+#include <algorithm>
+#include <unordered_set>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CallStackTreeNode
 {
-	DWORD64 dwArddress;
-	uint32 invokeCount;
+	DWORD64 dwArddress{ 0 };
+	uint32_t invokeCount{ 0 };
 
 	std::list<CallStackTreeNode> children;
 
-	CallStackTreeNode()									: dwArddress(0), invokeCount(0) {}
-	CallStackTreeNode(DWORD64 address)	: dwArddress(address), invokeCount(0) {} 
+	CallStackTreeNode() = default;
+	CallStackTreeNode(DWORD64 address)	: dwArddress(address) {} 
 
 	bool Merge(const CallStack& callstack, size_t index)
 	{
@@ -49,9 +52,9 @@ struct CallStackTreeNode
 
 	OutputDataStream& Serialize(OutputDataStream& stream) const
 	{
-		stream << (uint64)dwArddress << invokeCount;
+		stream << (uint64_t)dwArddress << invokeCount;
 
-		stream << (uint32)children.size();
+		stream << (uint32_t)children.size();
 		for (const CallStackTreeNode& node : children)
 		{
 			node.Serialize(stream);
@@ -66,24 +69,15 @@ bool Sampler::StopSampling()
 	if (!IsActive())
 		return false;
 
-	SetEvent(finishEvent);
-
-	DWORD result = WaitForSingleObject(workerThread, INFINITE);
-	BRO_UNUSED(result);
-	BRO_ASSERT(result == WAIT_OBJECT_0, "Can't stop sampling thread!");
-
-	CloseHandle(workerThread);
-	workerThread = nullptr;
-
-	CloseHandle(finishEvent);
-	finishEvent = nullptr;
-
+	finishEvent.Notify();
+	
+	workerThread.join();
 	targetThreads.clear();
 
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Sampler::Sampler() : workerThread(nullptr), finishEvent(nullptr), intervalMicroSeconds(300)
+Sampler::Sampler() : intervalMicroSeconds(300)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,57 +102,38 @@ void Sampler::StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& thr
 
 	callstacks.clear();
 
-	BRO_VERIFY(finishEvent == nullptr && workerThread == nullptr, "Can't start sampling!", return);
-
-	finishEvent = CreateEvent(NULL, false, false, 0);
-	workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
-
-	BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
+	workerThread = std::thread([this](){AsyncUpdate();});
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
 {
-	return workerThread != nullptr || finishEvent != nullptr;
+	return workerThread.joinable();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ClearStackContext(CONTEXT& context)
+void Sampler::AsyncUpdate()
 {
-	memset(&context, 0, sizeof(context));
-	context.ContextFlags = CONTEXT_FULL;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
-{
-	Sampler& sampler = *(Sampler*)(lpParam);
-
 	std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
-	openThreads.reserve(sampler.targetThreads.size());
+	openThreads.reserve(targetThreads.size());
 
-	for (ThreadEntry* entry : sampler.targetThreads)
+	for (ThreadEntry* entry : targetThreads)
 	{
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
-		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadID);
-		if (hThread == NULL)
+		HANDLE hThread = GetThreadHandleByThreadID(threadID);
+		if (hThread == 0)
 			continue;
 
 		openThreads.push_back(std::make_pair(hThread, entry));
 	}
 
 	if (openThreads.empty())
-		return 0;
+		return ;
 
 	CallStackBuffer buffer;
 
-	CONTEXT context;
-
-	ClearStackContext(context);
-
-	while (WaitForSingleObject(sampler.finishEvent, 0) == WAIT_TIMEOUT)
+	while ( finishEvent.WaitForEvent(intervalMicroSeconds) )
 	{
-		SpinSleep(sampler.intervalMicroSeconds);
-
 		// Check whether we are inside sampling scope
 		for (const auto& entry : openThreads)
 		{
@@ -168,50 +143,33 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 			if (!thread->storage.isSampling)
 				continue;
 
-			uint count = 0;
-
-			DWORD suspendedStatus = SuspendThread(handle);
-
-			if (suspendedStatus != (DWORD)-1)
-			{
-				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
-				{
-					count = sampler.symEngine.GetCallstack(handle, context, buffer);
-				}
-
-				ClearStackContext(context);
-				ResumeThread(handle);
-			}
-
+			uint count = symEngine.GetCallstack(handle, buffer);
 			if (count > 0)
 			{
-				sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
+				callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
 			}
 
-			ClearStackContext(context);
+
 		}
 	}
 
 	for (const auto& entry : openThreads)
 	{
-		CloseHandle(entry.first);
+		ReleaseThreadHandle(entry.first);
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
 	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
-	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
+	return os << (uint64_t)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 {
 	BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
 
-	stream << (uint32)callstacks.size();
+	stream << (uint32_t)callstacks.size();
 
 	CallStackTreeNode tree;
 
@@ -270,7 +228,7 @@ size_t Sampler::GetCollectedCount() const
 	return callstacks.size();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Sampler::SetupHook(uint64 address, bool isHooked)
+bool Sampler::SetupHook(uint64_t address, bool isHooked)
 {
 	if (!isHooked && address == 0)
 	{
@@ -282,7 +240,7 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 		{
 			if (isHooked)
 			{
-				std::vector<ulong> threadIDs;
+				std::vector<uint32_t> threadIDs;
 
 				const auto& threads = Core::Get().GetThreads();
 				for (const auto& thread : threads)

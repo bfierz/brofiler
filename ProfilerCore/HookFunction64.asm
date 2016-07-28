@@ -33,6 +33,8 @@
 	NotActiveProlog&index:
 		@PopAllRegisters
 
+		; Transparently call the original function by hiding the hook function from the call stack
+
 		pop  [hookSlotData + index * HookDataSize + ReturnAddress]               ; Store return address
 		call [hookSlotData + index * HookDataSize + OriginalAddress]             ; Call original function
 		push [hookSlotData + index * HookDataSize + ReturnAddress]               ; Restore return address

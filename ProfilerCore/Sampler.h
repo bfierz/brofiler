@@ -1,13 +1,18 @@
 #pragma once
 #include "SymEngine.h"
-#include <windows.h>
+#include "Thread.h"
+
+// C++ standard library
 #include <array>
+#include <list>
 #include <memory>
 #include <vector>
+#include <thread>
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class OutputDataStream;
 struct ThreadEntry;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Sampler
@@ -17,13 +22,13 @@ class Sampler
 	std::list<CallStack> callstacks;
 	std::vector<ThreadEntry*> targetThreads;
 
-	HANDLE workerThread;
-	HANDLE finishEvent;
+	std::thread workerThread;
+	SyncEvent finishEvent;
 
 	uint intervalMicroSeconds;
 
 	// Called from worker thread
-	static DWORD WINAPI AsyncUpdate( LPVOID lpParam );
+	void AsyncUpdate();
 public:
 	Sampler();
 	~Sampler();
@@ -35,7 +40,7 @@ public:
 	void StartSampling(const std::vector<std::unique_ptr<ThreadEntry>>& threads, uint samplingInterval = 300);
 	bool StopSampling();
 
-	bool SetupHook(uint64 address, bool isHooked);
+	bool SetupHook(uint64_t address, bool isHooked);
 
 	size_t GetCollectedCount() const;
 	OutputDataStream& Serialize(OutputDataStream& stream);

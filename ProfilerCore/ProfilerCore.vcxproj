@@ -190,10 +190,10 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>;WINDOWS</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)32.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -208,9 +208,10 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)32.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -224,10 +225,10 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>;WINDOWS</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)64.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -241,9 +242,10 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>/EHsc %(AdditionalOptions)</AdditionalOptions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)64.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -258,7 +260,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)32.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -274,7 +277,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)32.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -290,7 +294,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)64.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -306,7 +311,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PROFILER_EXPORTS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROFILER_EXPORTS;;WINDOWS</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName)64.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -335,20 +341,24 @@
     <ClInclude Include="SymEngine.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="Types.h" />
+    <ClInclude Include="Windows\CommonWindows.h" />
+    <ClInclude Include="Windows\ConcurrencyWindows.h" />
+    <ClInclude Include="Windows\SocketWindows.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
-    <ClCompile Include="ETW.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="EventDescriptionBoard.cpp" />
-    <ClCompile Include="Hook.cpp" />
-    <ClCompile Include="HPTimer.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="ProfilerServer.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Serialization.cpp" />
-    <ClCompile Include="SymEngine.cpp" />
+    <ClCompile Include="Thread.cpp" />
+    <ClCompile Include="Windows\ETWWindows.cpp" />
+    <ClCompile Include="Windows\HookWindows.cpp" />
+    <ClCompile Include="Windows\HPTimerWindows.cpp" />
+    <ClCompile Include="Windows\SymEngineWindows.cpp" />
+    <ClCompile Include="Windows\ThreadWindows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="HookFunction32.asm">

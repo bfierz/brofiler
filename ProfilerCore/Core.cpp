@@ -20,7 +20,7 @@ extern "C" Profiler::EventData* NextEvent()
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 INVALID_THREAD_ID = (uint32)-1;
+static const uint32_t INVALID_THREAD_ID = (uint32_t)-1;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
@@ -41,11 +41,11 @@ void Core::DumpFrames()
 
 	DumpProgress("Collecting Frame Events...");
 
-	uint32 mainThreadIndex = 0;
+	uint32_t mainThreadIndex = 0;
 
 	for (size_t i = 0; i < threads.size(); ++i)
 		if (threads[i]->description.threadID == mainThreadID)
-			mainThreadIndex = (uint32)i;
+			mainThreadIndex = (uint32_t)i;
 
 	EventTime timeSlice;
 	timeSlice.start = frames.front().start;
@@ -53,7 +53,7 @@ void Core::DumpFrames()
 
 	OutputDataStream boardStream;
 
-	static uint32 boardNumber = 0;
+	static uint32_t boardNumber = 0;
 	boardStream << ++boardNumber;
 	boardStream << GetFrequency();
 	boardStream << timeSlice;
@@ -63,14 +63,14 @@ void Core::DumpFrames()
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
 
 	ScopeData scope;
-	scope.header.boardNumber = (uint32)boardNumber;
+	scope.header.boardNumber = (uint32_t)boardNumber;
 
 	std::vector<EventTime> syncronization;
 
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
 		ThreadEntry* entry = threads[i].get();
-		scope.header.threadNumber = (uint32)i;
+		scope.header.threadNumber = (uint32_t)i;
 
 		syncronization.resize(entry->storage.synchronizationBuffer.Size());
 
@@ -130,7 +130,7 @@ void Core::DumpSamplingData()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : mainThreadID(INVALID_THREAD_ID), isActive(false), progressReportedLastTimestampMS(0)
+Core::Core() : mainThreadID(INVALID_THREAD_ID), progressReportedLastTimestampMS(0), isActive(false)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	DWORD currentThreadID = GetCurrentThreadId();
+	DWORD currentThreadID = CalculateCurrentThreadID();
 
 	if (mainThreadID == INVALID_THREAD_ID)
 		mainThreadID = currentThreadID;
@@ -200,10 +200,10 @@ void Core::DumpCapturingProgress()
 	std::stringstream stream;
 
 	if (isActive)
-		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
+		stream << "Capturing Frame " << (uint32_t)frames.size() << std::endl;
 
 	if (sampler.IsActive())
-		stream << "Sample Count " << (uint32)sampler.GetCollectedCount() << std::endl;
+		stream << "Sample Count " << (uint32_t)sampler.GetCollectedCount() << std::endl;
 
 	DumpProgress(stream.str().c_str());
 }
@@ -216,7 +216,7 @@ bool Core::IsTimeToReportProgress() const
 void Core::SendHandshakeResponse(ETW::Status status)
 {
 	OutputDataStream stream;
-	stream << (uint32)status;
+	stream << (uint32_t)status;
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +245,7 @@ const std::vector<std::unique_ptr<ThreadEntry>>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage* Core::storage = nullptr;
+BRO_THREAD_LOCAL EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ BROFILER_API bool IsActive()
 	return Core::Get().isActive;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(GetCurrentThreadId())
+ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : threadID(CalculateCurrentThreadID()), name(threadName)
 {
 	Core::Get().RegisterThread(*this);
 }
@@ -294,7 +294,9 @@ ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) 
 void ThreadEntry::Activate(bool isActive)
 {
 	if (isActive)
+	{
 		storage.Clear(true);
+	}
 
 	*threadTLS = isActive ? &storage : nullptr;
 }
@@ -302,11 +304,17 @@ void ThreadEntry::Activate(bool isActive)
 bool IsSleepOnlyScope(const ScopeData& scope)
 {
 	if (!scope.categories.empty() || scope.synchronization.empty())
+	{
 		return false;
+	}
 
-	for each (const EventData& data in scope.events)
+	for (const EventData& data : scope.events)
+	{
 		if (data.description->color != Color::White)
+		{
 			return false;
+		}
+	}
 
 	return true;
 }

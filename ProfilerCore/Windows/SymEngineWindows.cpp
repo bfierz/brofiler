@@ -1,7 +1,10 @@
-#include "SymEngine.h"
+#include "../SymEngine.h"
+#include "../Thread.h"
 
+#include <windows.h>
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
+
 
 namespace Profiler
 {
@@ -19,8 +22,9 @@ namespace Profiler
 //	LocalFree(lpMsgBuf);
 //}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
+SymEngine::SymEngine() : hProcess(GetCurrentProcess())
 {
+	static_assert(sizeof(hProcess) >= sizeof(HANDLE), "Too small hProcess type");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SymEngine::~SymEngine()
@@ -128,58 +132,67 @@ void SymEngine::Close()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
+uint SymEngine::GetCallstack(HANDLE hThread, CallStackBuffer& callstack)
 {
-	// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
-	// Otherwise it will be 5x times slower
-	// Init();
+	uint index = 0;
+	if (PauseThread(hThread))
+	{
+		CONTEXT context;
+		// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
+		if (RetrieveThreadContext(hThread, context))
+		{
+			// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
+			// Otherwise it will be 5x times slower
+			// Init();
 
-	STACKFRAME64 stackFrame;
-	memset(&stackFrame, 0, sizeof(STACKFRAME64));
-	DWORD machineType;
+			STACKFRAME64 stackFrame;
+			memset(&stackFrame, 0, sizeof(STACKFRAME64));
+			DWORD machineType;
 
-	stackFrame.AddrPC.Mode = AddrModeFlat;
-	stackFrame.AddrFrame.Mode = AddrModeFlat;
-	stackFrame.AddrStack.Mode = AddrModeFlat;
+			stackFrame.AddrPC.Mode = AddrModeFlat;
+			stackFrame.AddrFrame.Mode = AddrModeFlat;
+			stackFrame.AddrStack.Mode = AddrModeFlat;
 
 #ifdef _M_IX86
-	machineType = IMAGE_FILE_MACHINE_I386;
-	stackFrame.AddrPC.Offset = context.Eip;
-	stackFrame.AddrFrame.Offset = context.Ebp;
-	stackFrame.AddrStack.Offset = context.Esp;
+			machineType = IMAGE_FILE_MACHINE_I386;
+			stackFrame.AddrPC.Offset = context.Eip;
+			stackFrame.AddrFrame.Offset = context.Ebp;
+			stackFrame.AddrStack.Offset = context.Esp;
 #elif _M_X64
-	machineType = IMAGE_FILE_MACHINE_AMD64;
-	stackFrame.AddrPC.Offset = context.Rip;
-	stackFrame.AddrFrame.Offset = context.Rsp;
-	stackFrame.AddrStack.Offset = context.Rsp;
+			machineType = IMAGE_FILE_MACHINE_AMD64;
+			stackFrame.AddrPC.Offset = context.Rip;
+			stackFrame.AddrFrame.Offset = context.Rsp;
+			stackFrame.AddrStack.Offset = context.Rsp;
 #elif _M_IA64
-	machineType = IMAGE_FILE_MACHINE_IA64;
-	stackFrame.AddrPC.Offset = context.StIIP;
-	stackFrame.AddrFrame.Offset = context.IntSp;
-	stackFrame.AddrStack.Offset = context.IntSp;
-	stackFrame.AddrBStore.Offset = context.RsBSP;
-	stackFrame.AddrBStore.Mode = AddrModeFlat;
+			machineType = IMAGE_FILE_MACHINE_IA64;
+			stackFrame.AddrPC.Offset = context.StIIP;
+			stackFrame.AddrFrame.Offset = context.IntSp;
+			stackFrame.AddrStack.Offset = context.IntSp;
+			stackFrame.AddrBStore.Offset = context.RsBSP;
+			stackFrame.AddrBStore.Mode = AddrModeFlat;
 #else
 #error "Platform not supported!"
 #endif
 
-	uint index = 0;
-	while (	StackWalk64(machineType, GetCurrentProcess(), hThread, &stackFrame, &context, nullptr, &SymFunctionTableAccess64, &SymGetModuleBase64, nullptr) )
-	{
-		DWORD64 dwAddress = stackFrame.AddrPC.Offset;
-		if (!dwAddress)
-			break;
+			while (	StackWalk64(machineType, GetCurrentProcess(), hThread, &stackFrame, &context, nullptr, &SymFunctionTableAccess64, &SymGetModuleBase64, nullptr) )
+			{
+				DWORD64 dwAddress = stackFrame.AddrPC.Offset;
+				if (!dwAddress)
+					break;
 
-		if (index == callstack.size())
-			return 0; // Too long callstack - possible error, let's skip it
+				if (index == callstack.size())
+					return 0; // Too long callstack - possible error, let's skip it
 
-		if (index > 0 && callstack[index - 1] == dwAddress)
-			continue;
+				if (index > 0 && callstack[index - 1] == dwAddress)
+					continue;
 
-		callstack[index] = dwAddress;
-		++index;
+				callstack[index] = dwAddress;
+				++index;
+			}
+
+		}
+		ContinueThread(hThread);
 	}
-
 	return index;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

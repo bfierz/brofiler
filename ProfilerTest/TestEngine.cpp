@@ -1,27 +1,25 @@
 #include "TestEngine.h"
-#include "..\ProfilerCore\Types.h"
-#include "..\ProfilerCore\Brofiler.h"
+#include "../ProfilerCore/Brofiler.h"
 #include <math.h>
 #include <vector>
+#include <chrono>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Test
 {
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI WorkerThread(PVOID params)
+void WorkerThread(Engine* engine)
 {
-	BROFILER_THREAD("Worker")
-	Engine* engine = (Engine*)params;
+	BROFILER_THREAD("Worker");
 
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		Sleep(5); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		engine->UpdatePhysics();
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const uint REPEAT_COUNT = 256 * 1024;
@@ -95,7 +93,7 @@ void Engine::Draw()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
 { BROFILER_CATEGORY( "UpdatePhysics", Profiler::Color::Wheat )
-	int64 time = Profiler::GetTimeMicroSeconds();
+	int64_t time = Profiler::GetTimeMicroSeconds();
 	while (Profiler::GetTimeMicroSeconds() - time < 20 * 1000) {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,16 +101,20 @@ const size_t WORKER_THREAD_COUNT = 2;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::Engine() : isAlive(true)
 {
-	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
-		workers.push_back(CreateThread(0, 0, WorkerThread, this, 0, 0));
+	isAlive.store(true);
+	workers.resize(WORKER_THREAD_COUNT);
+	for(auto& thread: workers) {
+		thread = std::thread([this]() { WorkerThread(this);});
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
 {
-	isAlive = false;
+	isAlive.store(false, std::memory_order_release);
 
-	for (size_t i = 0; i < workers.size(); ++i)
-		TerminateThread(workers[i], 1);
+	for(auto& thread: workers) {
+		thread.join();
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

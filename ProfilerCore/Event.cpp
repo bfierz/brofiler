@@ -1,5 +1,4 @@
 #include <cstring>
-#include <windows.h>
 #include "Event.h"
 #include "Core.h"
 #include "Thread.h"
@@ -37,7 +36,7 @@ EventData* Event::Start(const EventDescription& description)
 
 		if (description.isSampling)
 		{
-			InterlockedIncrement(&storage->isSampling);
+			storage->isSampling += 1;
 		}
 	}
 	return result;
@@ -50,14 +49,14 @@ void Event::Stop(EventData& data)
 	if (data.description->isSampling)
 	{
 		if (EventStorage* storage = Core::storage)
-			InterlockedDecrement(&storage->isSampling);
+			storage->isSampling -= 1;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
-	byte flags = (ob.isSampling ? 0x1 : 0);
-	return stream << ob.name << ob.file << ob.line << (unsigned long) ob.color << flags;
+	uint8_t flags = (ob.isSampling ? 0x1 : 0);
+	return stream << ob.name << ob.file << ob.line << (uint32_t) ob.color << flags;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)
