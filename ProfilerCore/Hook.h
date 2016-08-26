@@ -27,7 +27,7 @@ struct HookDescription
 typedef void (*HookSlotFunction)();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Packed structure for assembler (4x8byte = 32 bytes)
+// Packed structure for assembler (x64: 4x8byte = 32 bytes, x86: 4x4byte = 16 bytes)
 struct HookData
 {
 	void* returnAddress;
@@ -38,7 +38,7 @@ struct HookData
 
 	void Setup(Profiler::EventDescription* desc, void* address)
 	{
-		static_assert(sizeof(HookData) == 32, "HookData needs to compile to a size of 32 bytes");
+		static_assert(sizeof(HookData) == 4 * sizeof(void*), "HookData needs to compile to a size of 32 bytes");
 
 		returnAddress = nullptr;
 		originalAddress = address;
