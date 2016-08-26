@@ -54,10 +54,18 @@ namespace Profiler
 		}
 
 	private:
-		int Bind(short port)
+		int Bind(short port, bool local)
 		{
+			if (local)
+			{
+				address.sin_addr.s_addr = INADDR_LOOPBACK;
+			}
+			else
+			{
+				address.sin_addr.s_addr = INADDR_ANY;
+			}
+
 			address.sin_family      = AF_INET;
-			address.sin_addr.s_addr = INADDR_ANY;
 			address.sin_port        = htons(port);
 
 			if (::bind(listenSocket, (sockaddr *)&address, sizeof(address)) == 0)
@@ -98,11 +106,11 @@ namespace Profiler
 			Close();
 		}
 
-		bool Bind(short startPort, short portRange)
+		bool Bind(short startPort, short portRange, bool local)
 		{
 			for (short port = startPort; port < startPort + portRange; ++port)
 			{
-				int result = Bind(port);
+				int result = Bind(port, local);
 
 				if (result == WSAEADDRINUSE)
 					continue;

@@ -24,7 +24,7 @@ class Server
 
 	CriticalSection lock;
 	
-	Server( short port );
+	Server(short port, bool local);
 	~Server();
 
 	bool InitConnection();
