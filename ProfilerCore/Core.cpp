@@ -6,6 +6,13 @@
 #include "Thread.h"
 #include "HPTimer.h"
 
+PFNGLGENQUERIESPROC __genQueries = nullptr;
+PFNGLDELETEQUERIESPROC __deleteQueries = nullptr;
+PFNGLQUERYCOUNTERPROC __queryCounter = nullptr;
+PFNGLGETQUERYOBJECTIVPROC __getQueryObjectiv = nullptr;
+PFNGLGETQUERYOBJECTI64VPROC __getQueryObjecti64v = nullptr;
+PFNGLGETQUERYOBJECTUI64VPROC __getQueryObjectui64v = nullptr;
+
 extern "C" Profiler::EventData* NextEvent()
 {
 	if (Profiler::EventStorage* storage = Profiler::Core::storage)
@@ -15,7 +22,6 @@ extern "C" Profiler::EventData* NextEvent()
 
 	return nullptr;
 }
-
 
 namespace Profiler
 {
@@ -47,6 +53,12 @@ void Core::DumpFrames()
 		if (threads[i]->description.threadID == mainThreadID)
 			mainThreadIndex = (uint32_t)i;
 
+	std::vector<ThreadDescription> threadDescriptions(2*threads.size());
+	for (size_t i = 0; i < threads.size(); ++i)
+		threadDescriptions[i] = threads[i]->description;
+	for (size_t i = 0; i < threads.size(); ++i)
+		threadDescriptions[threads.size() + i] = threads[i]->description;
+
 	EventTime timeSlice;
 	timeSlice.start = frames.front().start;
 	timeSlice.finish = frames.back().finish;
@@ -57,7 +69,7 @@ void Core::DumpFrames()
 	boardStream << ++boardNumber;
 	boardStream << GetFrequency();
 	boardStream << timeSlice;
-	boardStream << threads;
+	boardStream << threadDescriptions;
 	boardStream << mainThreadIndex;
 	boardStream << EventDescriptionBoard::Get();
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
@@ -93,6 +105,52 @@ void Core::DumpFrames()
 						rootEvent = &data;
 						scope.InitRootEvent(*rootEvent);
 					} 
+					else if (rootEvent->finish < data.finish)
+					{
+						synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
+						scope.Send();
+
+						rootEvent = &data;
+						scope.InitRootEvent(*rootEvent);
+					}
+					else
+					{
+						scope.AddEvent(data);
+					}
+				}
+			});
+
+			synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
+			scope.Send();
+		}
+	}
+
+	for (size_t i = 0; i < threads.size(); ++i)
+	{
+		ThreadEntry* entry = threads[i].get();
+		scope.header.threadNumber = (uint32_t)threads.size() + (uint32_t)i;
+
+		syncronization.resize(entry->storage.synchronizationBuffer.Size());
+
+		if (!syncronization.empty())
+			entry->storage.synchronizationBuffer.ToArray(&syncronization[0]);
+
+		size_t synchronizationIndex = 0;
+
+		// OpenGL events
+		if (!entry->storage.glEventBuffer.IsEmpty())
+		{
+			const EventData* rootEvent = nullptr;
+
+			entry->storage.glEventBuffer.ForEach([&](GLEventData& data)
+			{
+				if (data.finish >= data.start && data.start >= timeSlice.start)// && timeSlice.finish >= data.finish)
+				{
+					if (!rootEvent)
+					{
+						rootEvent = &data;
+						scope.InitRootEvent(*rootEvent);
+					}
 					else if (rootEvent->finish < data.finish)
 					{
 						synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
@@ -258,7 +316,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 {
-	return stream << ob.header << ob.categories << ob.synchronization << ob.events;
+	return stream << ob.header << ob.categories << ob.synchronization << ob.events << ob.glEvents;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)

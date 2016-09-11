@@ -116,6 +116,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <Profile>false</Profile>
       <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalDependencies>glfw3.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

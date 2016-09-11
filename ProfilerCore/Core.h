@@ -8,6 +8,37 @@
 
 #include <memory>
 
+// OpenGL support
+#include <GL/GL.h>
+#define GL_NONE 0
+#define GL_TIMESTAMP 0x8E28
+#define GL_QUERY_RESULT 0x8866
+#define GL_QUERY_RESULT_AVAILABLE 0x8867
+
+typedef int64_t GLint64;
+typedef uint64_t GLuint64;
+
+typedef void(APIENTRY *PFNGLGENQUERIESPROC) (GLsizei n, GLuint* ids);
+typedef void(APIENTRY *PFNGLDELETEQUERIESPROC) (GLsizei n, const GLuint* ids);
+typedef void(APIENTRY *PFNGLQUERYCOUNTERPROC) (GLuint id, GLenum target);
+typedef void(APIENTRY *PFNGLGETQUERYOBJECTIVPROC) (GLuint id, GLenum pname, GLint* params);
+typedef void(APIENTRY *PFNGLGETQUERYOBJECTI64VPROC) (GLuint id, GLenum pname, GLint64* params);
+typedef void(APIENTRY *PFNGLGETQUERYOBJECTUI64VPROC) (GLuint id, GLenum pname, GLuint64* params);
+
+#define glGenQueries __genQueries
+#define glDeleteQueries __deleteQueries
+#define glQueryCounter __queryCounter
+#define glGetQueryObjectiv __getQueryObjectiv
+#define glGetQueryObjecti64v __getQueryObjecti64v
+#define glGetQueryObjectui64v __getQueryObjectui64v
+
+extern PFNGLGENQUERIESPROC __genQueries;
+extern PFNGLDELETEQUERIESPROC __deleteQueries;
+extern PFNGLQUERYCOUNTERPROC __queryCounter;
+extern PFNGLGETQUERYOBJECTIVPROC __getQueryObjectiv;
+extern PFNGLGETQUERYOBJECTI64VPROC __getQueryObjecti64v;
+extern PFNGLGETQUERYOBJECTUI64VPROC __getQueryObjectui64v;
+
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,10 +57,23 @@ struct ScopeData
 	std::vector<EventData> categories;
 	std::vector<EventTime> synchronization;
 	std::vector<EventData> events;
+	std::vector<GLEventData> glEvents;
 
 	void AddEvent(const EventData& data)
 	{
 		events.push_back(data);
+		if (data.description->color != Color::Null)
+		{
+			if (data.description->color == Color::White)
+				synchronization.push_back(data);
+			else
+				categories.push_back(data);
+		}
+	}
+
+	void AddEvent(const GLEventData& data)
+	{
+		glEvents.push_back(data);
 		if (data.description->color != Color::Null)
 		{
 			if (data.description->color == Color::White)
@@ -67,18 +111,25 @@ OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 typedef MemoryPool<EventTime, 1024> SynchronizationBuffer;
+typedef MemoryPool<GLEventData, 1024> GLEventBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
+	volatile uint isSampling{ 0 };
+
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
 	SynchronizationBuffer synchronizationBuffer;
-
-	volatile uint isSampling{ 0 };
+	GLEventBuffer glEventBuffer;
 
 	BRO_INLINE EventData& NextEvent() 
 	{
 		return eventBuffer.Add(); 
+	}
+
+	BRO_INLINE GLEventData& NextGLEvent()
+	{
+		return glEventBuffer.Add();
 	}
 
 	BRO_INLINE void RegisterCategory(const EventData& eventData) 
@@ -90,6 +141,7 @@ struct EventStorage
 	void Clear(bool preserveContent)
 	{
 		eventBuffer.Clear(preserveContent);
+		glEventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
 		synchronizationBuffer.Clear(preserveContent);
 	}
